@@ -67,7 +67,7 @@ class AppTranslations {
       'meal_supper': 'มื้อดึก',
       'meal_supplement': 'อาหารเสริม',
 
-      // Scan sheet
+      // Scan sheet & Camera
       'scan_title': 'บันทึกอาหาร',
       'scan_subtitle': 'เลือกวิธีที่สะดวกที่สุดสำหรับคุณ',
       'scan_ai_title': 'ถ่ายรูปอาหาร',
@@ -77,6 +77,28 @@ class AppTranslations {
       'scan_manual_title': 'พิมพ์เอง',
       'scan_manual_desc': 'ค้นหาหรือกรอกเมนูด้วยตัวเอง',
       'recommended': 'แนะนำ',
+      'camera': 'กล้องถ่ายรูป',
+      'gallery': 'เลือกจากอัลบั้ม',
+      'scan_hint': 'วางจานอาหารหรือเครื่องดื่มให้อยู่ในกรอบ',
+      'scan_take_photo': 'ถ่ายรูปเลย',
+
+      // ML Kit Gatekeeper & Compression
+      'verifying_food': 'AI ในเครื่องกำลังตรวจสอบอาหาร...',
+      'compressing_image': 'กำลังปรับขนาดภาพให้รวดเร็ว...',
+      'no_food_detected_title': 'ไม่พบอาหารในภาพ',
+      'no_food_detected_desc': 'ระบบตรวจพบว่าเป็น "{label}" กรุณาถ่ายภาพอาหารในจานหรือเครื่องดื่มใหม่อีกครั้งเพื่อความแม่นยำ',
+      'retake_photo': 'ถ่ายภาพใหม่',
+      'pick_from_gallery': 'เลือกจากอัลบั้ม',
+
+      // AI Result
+      'ai_result_title': 'ผลการวิเคราะห์อาหาร',
+      'ai_confidence': 'ความมั่นใจ AI',
+      'estimated_portion': 'น้ำหนักโดยประมาณ',
+      'ingredients': 'วัตถุดิบที่ตรวจพบ',
+      'cooking_method': 'วิธีปรุง',
+      'dietitian_advice': 'คำแนะนำจากนักกำหนดอาหาร',
+      'proceed_to_portion': 'ปรับสัดส่วนอาหาร (Smart Portion)',
+      'save_directly': 'บันทึกลงมื้ออาหารเลย',
 
       // Loading
       'loading_data': 'กำลังเตรียมข้อมูลสุขภาพของคุณ...',
@@ -172,7 +194,7 @@ class AppTranslations {
       'meal_supper': 'Supper',
       'meal_supplement': 'Supplement',
 
-      // Scan sheet
+      // Scan sheet & Camera
       'scan_title': 'Log your food',
       'scan_subtitle': 'Pick the easiest way for you',
       'scan_ai_title': 'Snap a photo',
@@ -182,6 +204,28 @@ class AppTranslations {
       'scan_manual_title': 'Type it in',
       'scan_manual_desc': 'Search or enter a meal yourself',
       'recommended': 'Best',
+      'camera': 'Camera',
+      'gallery': 'From Gallery',
+      'scan_hint': 'Fit your meal or drink inside the frame',
+      'scan_take_photo': 'Take photo',
+
+      // ML Kit Gatekeeper & Compression
+      'verifying_food': 'On-device AI is verifying food...',
+      'compressing_image': 'Optimizing image size...',
+      'no_food_detected_title': 'No Food Detected',
+      'no_food_detected_desc': 'Detected as "{label}". Please snap a photo of a meal or drink for accurate results.',
+      'retake_photo': 'Take new photo',
+      'pick_from_gallery': 'Pick from gallery',
+
+      // AI Result
+      'ai_result_title': 'Nutrition Analysis',
+      'ai_confidence': 'AI Confidence',
+      'estimated_portion': 'Estimated weight',
+      'ingredients': 'Detected ingredients',
+      'cooking_method': 'Cooking method',
+      'dietitian_advice': 'Dietitian advice',
+      'proceed_to_portion': 'Adjust portion (Smart Portion)',
+      'save_directly': 'Save meal directly',
 
       // Loading
       'loading_data': 'Preparing your health data...',

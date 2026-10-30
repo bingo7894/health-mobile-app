@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/locale_provider.dart';
 import 'package:health_app/core/widgets/food_loading_animation.dart';
+import 'food_scanner_screen.dart';
 
 /// แผ่นเลือกวิธีบันทึกอาหาร (Bottom Sheet):
 /// 1) ถ่ายรูปด้วย AI (การ์ดเด่นโทนส้ม Sunrise)
@@ -126,12 +127,13 @@ class ScanOptionsSheet extends ConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(22),
-                  onTap: () => _previewLoadingAndNotify(
-                    context,
-                    loadingTitle: tr.text('loading_ai_title'),
-                    loadingDesc: tr.text('loading_ai_desc'),
-                    doneMessage: tr.text('coming_soon'),
-                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    FoodScannerScreen.push(
+                      context,
+                      mealType: initialMealType,
+                    );
+                  },
                   child: Ink(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(

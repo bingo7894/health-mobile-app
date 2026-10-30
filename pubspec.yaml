@@ -30,6 +30,8 @@ dependencies:
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
   mobile_scanner: ^5.2.3
+  google_mlkit_commons: ^0.13.0
+  google_mlkit_image_labeling: ^0.16.1
 
   # Utilities & Storage
   intl: ^0.20.3
