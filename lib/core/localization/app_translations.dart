@@ -133,6 +133,11 @@ class AppTranslations {
       'base_ai_estimate': 'สัดส่วนเดิมจาก AI:',
       'macro_breakdown': 'สารอาหารหลังปรับสัดส่วน',
       'grams_unit': 'กรัม',
+      'key_ingredients_title': 'วัตถุดิบสำคัญ (ปรับเพิ่ม/ลดกรัมได้)',
+      'notes_before_save_title': 'รายละเอียดเพิ่มเติม / โน้ตกำกับ',
+      'notes_before_save_hint': 'เช่น ขอข้าวกล้อง, เผลอกินไม่หมดเหลือน้ำมันก้นจาน...',
+      'reanalyze_with_note_btn': 'ขอให้ AI คำนวณใหม่ตามโน้ตนี้ ✨',
+      'reanalyzing_title': 'AI กำลังวิเคราะห์จานนี้ใหม่ตามโน้ตของคุณ...',
 
       // Loading
       'loading_data': 'กำลังเตรียมข้อมูลสุขภาพของคุณ...',
@@ -294,6 +299,11 @@ class AppTranslations {
       'base_ai_estimate': 'Original AI estimate:',
       'macro_breakdown': 'Nutrients After Adjustment',
       'grams_unit': 'g',
+      'key_ingredients_title': 'Key Ingredients (Adjust Grams)',
+      'notes_before_save_title': 'Additional Notes & Specifics',
+      'notes_before_save_hint': 'e.g., brown rice instead, left half of oil on plate...',
+      'reanalyze_with_note_btn': 'Re-analyze with this note ✨',
+      'reanalyzing_title': 'AI is re-analyzing with your note...',
 
       // Loading
       'loading_data': 'Preparing your health data...',

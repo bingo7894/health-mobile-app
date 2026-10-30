@@ -8,7 +8,7 @@ import 'package:health_app/core/widgets/soft_card.dart';
 import 'package:health_app/features/food_scanner/data/models/food_analysis_model.dart';
 import '../providers/smart_portion_controller.dart';
 
-class SmartPortionScreen extends ConsumerWidget {
+class SmartPortionScreen extends ConsumerStatefulWidget {
   final FoodAnalysisModel analysis;
   final File? imageFile;
   final String? initialMealType;
@@ -38,18 +38,65 @@ class SmartPortionScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SmartPortionScreen> createState() => _SmartPortionScreenState();
+}
+
+class _SmartPortionScreenState extends ConsumerState<SmartPortionScreen> {
+  late final TextEditingController _noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  FluentEmojiName _getEmojiForIngredient(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('ข้าว') ||
+        lower.contains('rice') ||
+        lower.contains('แป้ง') ||
+        lower.contains('เส้น')) {
+      return FluentEmojiName.rice;
+    }
+    if (lower.contains('ไข่') || lower.contains('egg')) {
+      return FluentEmojiName.cooking;
+    }
+    if (lower.contains('ปลา') ||
+        lower.contains('fish') ||
+        lower.contains('กุ้ง') ||
+        lower.contains('shrimp')) {
+      return FluentEmojiName.fish;
+    }
+    if (lower.contains('ผัก') ||
+        lower.contains('สลัด') ||
+        lower.contains('salad') ||
+        lower.contains('กะเพรา')) {
+      return FluentEmojiName.salad;
+    }
+    return FluentEmojiName.potOfFood;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final tr = ref.watch(appTranslationsProvider);
-    final mealType = initialMealType ?? 'LUNCH';
+    final mealType = widget.initialMealType ?? 'LUNCH';
     final state = ref.watch(
-      smartPortionControllerFamily((analysis: analysis, mealType: mealType)),
+      smartPortionControllerFamily(
+          (analysis: widget.analysis, mealType: mealType)),
     );
     final controller = ref.read(
-      smartPortionControllerFamily((analysis: analysis, mealType: mealType))
+      smartPortionControllerFamily(
+              (analysis: widget.analysis, mealType: mealType))
           .notifier,
     );
 
-    final baseCalories = analysis.calories;
+    final baseCalories = widget.analysis.calories;
     final currentCalories = state.computed.calories;
     final diffCalories = currentCalories - baseCalories;
 
@@ -84,12 +131,13 @@ class SmartPortionScreen extends ConsumerWidget {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 children: [
-                  // Food Header Card
+                  // 1. Food Header Card
                   SoftCard(
                     padding: const EdgeInsets.all(14),
                     child: Row(
                       children: [
-                        if (imageFile != null && imageFile!.existsSync())
+                        if (widget.imageFile != null &&
+                            widget.imageFile!.existsSync())
                           Container(
                             width: 64,
                             height: 64,
@@ -101,7 +149,7 @@ class SmartPortionScreen extends ConsumerWidget {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(14),
                               child: Image.file(
-                                imageFile!,
+                                widget.imageFile!,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -126,7 +174,7 @@ class SmartPortionScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                analysis.thaiName,
+                                state.baseAnalysis.thaiName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -137,7 +185,7 @@ class SmartPortionScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                analysis.foodName,
+                                state.baseAnalysis.foodName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -147,7 +195,7 @@ class SmartPortionScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${tr.text('base_ai_estimate')} ~${analysis.portionWeightGrams.round()}g (${analysis.calories} kcal)',
+                                '${tr.text('base_ai_estimate')} ~${state.baseAnalysis.portionWeightGrams.round()}g (${state.baseAnalysis.calories} kcal)',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w600,
@@ -162,7 +210,7 @@ class SmartPortionScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 14),
 
-                  // Hero Calorie Display Card
+                  // 2. Hero Calorie Display Card
                   SoftCard(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -232,7 +280,114 @@ class SmartPortionScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Portion Slider Card
+                  // 3. Key Ingredients Stepper Card (วัตถุดิบสำคัญ ปรับกรัมแยกส่วนได้)
+                  if (state.keyIngredients.isNotEmpty) ...[
+                    SoftCard(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const FluentEmoji(
+                                FluentEmojiName.potOfFood,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  tr.text('key_ingredients_title'),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ...List.generate(state.keyIngredients.length,
+                              (index) {
+                            final item = state.keyIngredients[index];
+                            final emoji = _getEmojiForIngredient(item.name);
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceMuted,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                children: [
+                                  FluentEmoji(emoji, size: 22),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: const TextStyle(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${item.calories} kcal · P ${item.proteinG.round()}g C ${item.carbsG.round()}g F ${item.fatG.round()}g',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textTertiary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Stepper for this specific ingredient
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _StepperButton(
+                                        icon: Icons.remove_rounded,
+                                        onTap: () => controller
+                                            .stepIngredientGrams(index, -10),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        child: Text(
+                                          '${item.weightGrams.round()}g',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            color: AppColors.primaryDeep,
+                                          ),
+                                        ),
+                                      ),
+                                      _StepperButton(
+                                        icon: Icons.add_rounded,
+                                        onTap: () => controller
+                                            .stepIngredientGrams(index, 10),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // 4. Overall Plate Portion Slider Card
                   SoftCard(
                     padding: const EdgeInsets.all(18),
                     child: Column(
@@ -365,7 +520,7 @@ class SmartPortionScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Live Nutrients Breakdown
+                  // 5. Live Nutrients Breakdown
                   Text(
                     tr.text('macro_breakdown'),
                     style: const TextStyle(
@@ -417,9 +572,122 @@ class SmartPortionScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 16),
 
-                  // Meal Category Selector
+                  // 6. Pre-Save Custom Notes & Re-analyze Section
+                  SoftCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.edit_note_rounded,
+                              color: AppColors.primaryDeep,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                tr.text('notes_before_save_title'),
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _noteController,
+                          onChanged: (val) => controller.setCustomNote(val),
+                          maxLines: 2,
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            color: AppColors.textPrimary,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: tr.text('notes_before_save_hint'),
+                            hintStyle: const TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textTertiary,
+                            ),
+                            filled: true,
+                            fillColor: AppColors.surfaceMuted,
+                            contentPadding: const EdgeInsets.all(12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        if (widget.imageFile != null &&
+                            widget.imageFile!.existsSync()) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 42,
+                            child: OutlinedButton.icon(
+                              onPressed: state.isReanalyzing
+                                  ? null
+                                  : () async {
+                                      final ok = await controller
+                                          .reanalyzeWithNote(widget.imageFile);
+                                      if (ok && context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              '✨ AI อัปเดตการวิเคราะห์ใหม่ตามโน้ตเรียบร้อยแล้ว!',
+                                            ),
+                                            backgroundColor: AppColors.mint,
+                                          ),
+                                        );
+                                      }
+                                    },
+                              icon: state.isReanalyzing
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primaryDeep,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.auto_awesome_rounded,
+                                      size: 16,
+                                      color: AppColors.primaryDeep,
+                                    ),
+                              label: Text(
+                                tr.text('reanalyze_with_note_btn'),
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryDeep,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 1.2,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 7. Meal Category Selector
                   Text(
                     tr.text('select_meal_category'),
                     style: const TextStyle(
@@ -532,7 +800,7 @@ class SmartPortionScreen extends ConsumerWidget {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          '${analysis.thaiName} (${state.computed.weightGrams.round()}g · +$currentCalories kcal) ${tr.text('meal_saved_success')}',
+                                          '${widget.analysis.thaiName} (${state.computed.weightGrams.round()}g · +$currentCalories kcal) ${tr.text('meal_saved_success')}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w700,
                                             color: Colors.white,

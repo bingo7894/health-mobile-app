@@ -202,6 +202,56 @@ void main() {
     expect(result.sodiumMg, equals(400.0));
   });
 
+  test('MacroCalculator.calculateFromIngredients aggregates nutrients correctly', () {
+    final ingredients = [
+      const KeyIngredientItem(
+        name: 'ข้าวสวย',
+        weightGrams: 180.0,
+        calories: 240,
+        proteinG: 4.5,
+        carbsG: 52.5,
+        fatG: 0.5,
+      ),
+      const KeyIngredientItem(
+        name: 'เนื้ออกไก่ผัดกะเพรา',
+        weightGrams: 120.0,
+        calories: 260,
+        proteinG: 21.5,
+        carbsG: 11.9,
+        fatG: 12.5,
+      ),
+    ];
+    final result = MacroCalculator.calculateFromIngredients(
+      ingredients: ingredients,
+      baseWeightGrams: 300.0,
+      baseSodiumMg: 600.0,
+      baseSugarG: 2.0,
+      baseFiberG: 1.0,
+    );
+
+    expect(result.calories, equals(500));
+    expect(result.proteinG, equals(26.0));
+    expect(result.carbsG, equals(64.4));
+    expect(result.fatG, equals(13.0));
+  });
+
+  test('KeyIngredientItem.copyWithWeight scales nutrients proportionally', () {
+    const item = KeyIngredientItem(
+      name: 'ไข่ดาว',
+      weightGrams: 50.0,
+      calories: 120,
+      proteinG: 6.0,
+      carbsG: 1.0,
+      fatG: 10.0,
+    );
+    final doubled = item.copyWithWeight(100.0);
+    expect(doubled.weightGrams, equals(100.0));
+    expect(doubled.calories, equals(240));
+    expect(doubled.proteinG, equals(12.0));
+    expect(doubled.carbsG, equals(2.0));
+    expect(doubled.fatG, equals(20.0));
+  });
+
   testWidgets('SmartPortionScreen renders slider, preset chips and recalculates live',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(360, 800);
@@ -223,14 +273,46 @@ void main() {
     expect(find.text('ปรับสัดส่วนอาหาร (Smart Portion)'), findsOneWidget);
     expect(find.text('ข้าวกะเพราไก่ไข่ดาว'), findsOneWidget);
     expect(find.text('620'), findsOneWidget); // base calories
+
+    // Scroll down to Key Ingredients Card
+    await tester.scrollUntilVisible(
+      find.text('วัตถุดิบสำคัญ (ปรับเพิ่ม/ลดกรัมได้)'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('วัตถุดิบสำคัญ (ปรับเพิ่ม/ลดกรัมได้)'), findsOneWidget);
+    expect(find.text('ข้าวสวย'), findsOneWidget);
+    expect(find.text('เนื้ออกไก่ผัดกะเพรา'), findsOneWidget);
+    expect(find.text('ไข่ดาว'), findsOneWidget);
+
+    // Scroll down to preset chips
+    await tester.scrollUntilVisible(
+      find.text('0.5 จาน (ครึ่งเดียว)'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('0.5 จาน (ครึ่งเดียว)'), findsOneWidget);
 
     // Tap 0.5x chip
     await tester.tap(find.text('0.5 จาน (ครึ่งเดียว)'));
     await tester.pump();
 
+    // Scroll back up to Hero Calorie Display
+    await tester.scrollUntilVisible(
+      find.text('310'),
+      -200,
+      scrollable: find.byType(Scrollable).first,
+    );
     // 620 * 0.5 = 310 kcal
     expect(find.text('310'), findsOneWidget);
-    expect(find.text('175 กรัม'), findsOneWidget); // 350 * 0.5 = 175g
+
+    // Scroll to pre-save notes
+    await tester.scrollUntilVisible(
+      find.text('รายละเอียดเพิ่มเติม / โน้ตกำกับ'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('รายละเอียดเพิ่มเติม / โน้ตกำกับ'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
   });
 }

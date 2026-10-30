@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:health_app/features/food_scanner/data/datasources/ai_remote_datasource.dart';
 import 'package:health_app/features/food_scanner/data/models/food_analysis_model.dart';
 import 'package:health_app/features/food_scanner/domain/utils/macro_calculator.dart';
 import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
@@ -7,18 +9,24 @@ import 'package:health_app/features/home/presentation/providers/daily_summary_pr
 class SmartPortionState {
   final FoodAnalysisModel baseAnalysis;
   final double targetWeightGrams;
+  final List<KeyIngredientItem> keyIngredients;
   final MacroCalculationResult computed;
   final String selectedMealType;
+  final String customNote;
   final bool isSaving;
+  final bool isReanalyzing;
   final bool saveSuccess;
   final String? errorMessage;
 
   const SmartPortionState({
     required this.baseAnalysis,
     required this.targetWeightGrams,
+    required this.keyIngredients,
     required this.computed,
     required this.selectedMealType,
+    this.customNote = '',
     this.isSaving = false,
+    this.isReanalyzing = false,
     this.saveSuccess = false,
     this.errorMessage,
   });
@@ -26,18 +34,24 @@ class SmartPortionState {
   SmartPortionState copyWith({
     FoodAnalysisModel? baseAnalysis,
     double? targetWeightGrams,
+    List<KeyIngredientItem>? keyIngredients,
     MacroCalculationResult? computed,
     String? selectedMealType,
+    String? customNote,
     bool? isSaving,
+    bool? isReanalyzing,
     bool? saveSuccess,
     String? errorMessage,
   }) {
     return SmartPortionState(
       baseAnalysis: baseAnalysis ?? this.baseAnalysis,
       targetWeightGrams: targetWeightGrams ?? this.targetWeightGrams,
+      keyIngredients: keyIngredients ?? this.keyIngredients,
       computed: computed ?? this.computed,
       selectedMealType: selectedMealType ?? this.selectedMealType,
+      customNote: customNote ?? this.customNote,
       isSaving: isSaving ?? this.isSaving,
+      isReanalyzing: isReanalyzing ?? this.isReanalyzing,
       saveSuccess: saveSuccess ?? this.saveSuccess,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -46,36 +60,43 @@ class SmartPortionState {
 
 class SmartPortionController extends StateNotifier<SmartPortionState> {
   final NutritionRemoteDataSource nutritionDataSource;
+  final AiRemoteDataSource aiDataSource;
   final Ref ref;
 
   SmartPortionController({
     required FoodAnalysisModel baseAnalysis,
     required String initialMealType,
     required this.nutritionDataSource,
+    required this.aiDataSource,
     required this.ref,
   }) : super(
           SmartPortionState(
             baseAnalysis: baseAnalysis,
             targetWeightGrams: baseAnalysis.portionWeightGrams,
-            computed: MacroCalculator.calculate(
+            keyIngredients: List.of(baseAnalysis.keyIngredients),
+            computed: MacroCalculator.calculateFromIngredients(
+              ingredients: baseAnalysis.keyIngredients,
               baseWeightGrams: baseAnalysis.portionWeightGrams,
-              baseCalories: baseAnalysis.calories,
-              baseProteinG: baseAnalysis.proteinG,
-              baseCarbsG: baseAnalysis.carbsG,
-              baseFatG: baseAnalysis.fatG,
               baseSodiumMg: baseAnalysis.sodiumMg,
               baseSugarG: baseAnalysis.sugarG,
               baseFiberG: baseAnalysis.fiberG,
-              targetWeightGrams: baseAnalysis.portionWeightGrams,
             ),
             selectedMealType: initialMealType,
           ),
         );
 
-  /// ปรับน้ำหนักเป้าหมายโดยตรง (50g – 800g)
+  /// ปรับน้ำหนักเป้าหมายโดยตรง (50g – 800g) และสเกลวัตถุดิบทั้งหมด
   void setTargetGrams(double grams) {
     final clamped = grams.clamp(50.0, 800.0);
-    _recalculate(clamped);
+    final ratio = state.targetWeightGrams > 0
+        ? (clamped / state.targetWeightGrams)
+        : 1.0;
+
+    final updatedIngredients = state.keyIngredients
+        .map((item) => item.copyWithWeight(item.weightGrams * ratio))
+        .toList();
+
+    _recalculateFromIngredients(clamped, updatedIngredients);
   }
 
   /// ปรับตามอัตราส่วนสัดส่วนจาน (0.5x, 1.0x, 1.5x, 2.0x)
@@ -83,13 +104,39 @@ class SmartPortionController extends StateNotifier<SmartPortionState> {
     final newGrams = (state.baseAnalysis.portionWeightGrams * ratio)
         .roundToDouble()
         .clamp(50.0, 800.0);
-    _recalculate(newGrams);
+
+    final updatedIngredients = state.baseAnalysis.keyIngredients
+        .map((item) => item.copyWithWeight(item.weightGrams * ratio))
+        .toList();
+
+    _recalculateFromIngredients(newGrams, updatedIngredients);
   }
 
-  /// เพิ่มหรือลดน้ำหนักทีละขั้น (เช่น +10g, -10g)
+  /// เพิ่มหรือลดน้ำหนักจานรวมทีละขั้น
   void stepGrams(double step) {
     final newGrams = (state.targetWeightGrams + step).clamp(50.0, 800.0);
-    _recalculate(newGrams);
+    setTargetGrams(newGrams);
+  }
+
+  /// ปรับเพิ่ม/ลดกรัมของวัตถุดิบสำคัญรายตัว (เช่น ข้าวสวย -10g, เนื้อไก่ +10g)
+  void stepIngredientGrams(int index, double step) {
+    if (index < 0 || index >= state.keyIngredients.length) return;
+
+    final updated = List<KeyIngredientItem>.from(state.keyIngredients);
+    final current = updated[index];
+    final newGrams = (current.weightGrams + step).clamp(0.0, 1000.0);
+
+    updated[index] = current.copyWithWeight(newGrams);
+
+    final newTotalWeight =
+        updated.fold<double>(0.0, (acc, item) => acc + item.weightGrams);
+
+    _recalculateFromIngredients(newTotalWeight, updated);
+  }
+
+  /// ตั้งค่าข้อความโน้ตเพิ่มเติมก่อนบันทึก
+  void setCustomNote(String note) {
+    state = state.copyWith(customNote: note);
   }
 
   /// เปลี่ยนประเภทมื้ออาหาร
@@ -97,23 +144,66 @@ class SmartPortionController extends StateNotifier<SmartPortionState> {
     state = state.copyWith(selectedMealType: mealType);
   }
 
-  void _recalculate(double grams) {
-    final newComputed = MacroCalculator.calculate(
+  void _recalculateFromIngredients(
+    double totalGrams,
+    List<KeyIngredientItem> ingredients,
+  ) {
+    final newComputed = MacroCalculator.calculateFromIngredients(
+      ingredients: ingredients,
       baseWeightGrams: state.baseAnalysis.portionWeightGrams,
-      baseCalories: state.baseAnalysis.calories,
-      baseProteinG: state.baseAnalysis.proteinG,
-      baseCarbsG: state.baseAnalysis.carbsG,
-      baseFatG: state.baseAnalysis.fatG,
       baseSodiumMg: state.baseAnalysis.sodiumMg,
       baseSugarG: state.baseAnalysis.sugarG,
       baseFiberG: state.baseAnalysis.fiberG,
-      targetWeightGrams: grams,
     );
 
     state = state.copyWith(
-      targetWeightGrams: grams,
+      targetWeightGrams: totalGrams,
+      keyIngredients: ingredients,
       computed: newComputed,
     );
+  }
+
+  /// ส่งคำขอให้ AI Gemini วิเคราะห์ภาพใหม่ตามโน้ตที่เพิ่งพิมพ์
+  Future<bool> reanalyzeWithNote(File? imageFile) async {
+    if (imageFile == null || !imageFile.existsSync() || state.isReanalyzing) {
+      return false;
+    }
+
+    state = state.copyWith(isReanalyzing: true, errorMessage: null);
+
+    try {
+      final updatedAnalysis = await aiDataSource.analyzeFoodImage(
+        imageFile,
+        userNotes: state.customNote.trim(),
+      );
+
+      final newIngredients = List<KeyIngredientItem>.from(
+        updatedAnalysis.keyIngredients,
+      );
+
+      final newComputed = MacroCalculator.calculateFromIngredients(
+        ingredients: newIngredients,
+        baseWeightGrams: updatedAnalysis.portionWeightGrams,
+        baseSodiumMg: updatedAnalysis.sodiumMg,
+        baseSugarG: updatedAnalysis.sugarG,
+        baseFiberG: updatedAnalysis.fiberG,
+      );
+
+      state = state.copyWith(
+        baseAnalysis: updatedAnalysis,
+        targetWeightGrams: updatedAnalysis.portionWeightGrams,
+        keyIngredients: newIngredients,
+        computed: newComputed,
+        isReanalyzing: false,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isReanalyzing: false,
+        errorMessage: 'Re-analysis failed: $e',
+      );
+      return false;
+    }
   }
 
   /// บันทึกมื้ออาหารที่ปรับแต่งแล้วเข้าสู่ Database
@@ -125,13 +215,15 @@ class SmartPortionController extends StateNotifier<SmartPortionState> {
     final analysis = state.baseAnalysis;
     final comp = state.computed;
 
+    final foodNameWithNotes = state.customNote.trim().isNotEmpty
+        ? '${analysis.thaiName} (${state.customNote.trim()})'
+        : (analysis.thaiName.isNotEmpty ? analysis.thaiName : analysis.foodName);
+
     try {
       final success = await nutritionDataSource.logMeal(
         userId: kDefaultUserId,
         mealType: state.selectedMealType,
-        foodName: analysis.thaiName.isNotEmpty
-            ? analysis.thaiName
-            : analysis.foodName,
+        foodName: foodNameWithNotes,
         portionWeightGrams: comp.weightGrams,
         cookingMethod: analysis.cookingMethod,
         calories: comp.calories,
@@ -169,10 +261,13 @@ final smartPortionControllerFamily = StateNotifierProvider.autoDispose
     .family<SmartPortionController, SmartPortionState,
         ({FoodAnalysisModel analysis, String mealType})>((ref, arg) {
   final dataSource = ref.watch(nutritionDataSourceProvider);
+  final aiDataSource = ref.watch(aiRemoteDataSourceProvider);
+
   return SmartPortionController(
     baseAnalysis: arg.analysis,
     initialMealType: arg.mealType,
     nutritionDataSource: dataSource,
+    aiDataSource: aiDataSource,
     ref: ref,
   );
 });
