@@ -26,6 +26,11 @@ class AppColors {
   static const Color mint = Color(0xFF4CC9A0); // ออกกำลังกาย
   static const Color mintSoft = Color(0xFFE0F7EF);
 
+  // สีสถานะ & ลบรายการ (Theme Red)
+  static const Color errorRed = Color(0xFFDC2626);
+  static const Color errorRedSoft = Color(0xFFFEE2E2);
+  static const Color errorRedDeep = Color(0xFFB91C1C);
+
   // Neutrals
   static const Color background = Color(0xFFFFFAF4);
   static const Color surface = Color(0xFFFFFFFF);
