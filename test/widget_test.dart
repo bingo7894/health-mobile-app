@@ -120,16 +120,19 @@ void main() {
 
     // Scroll down to make action buttons visible in ListView
     await tester.scrollUntilVisible(
-      find.text('ทิ้งรูปนี้ / ไม่บันทึก'),
-      100,
+      find.text('ทิ้งรูปนี้ / ถ่ายใหม่'),
+      200,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(find.text('ทิ้งรูปนี้ / ถ่ายใหม่'));
+    await tester.pumpAndSettle();
+
     expect(find.text('เลือกมื้ออาหารที่จะบันทึก:'), findsOneWidget);
-    expect(find.text('ทิ้งรูปนี้ / ไม่บันทึก'), findsOneWidget);
+    expect(find.text('ทิ้งรูปนี้ / ถ่ายใหม่'), findsOneWidget);
     expect(find.text('ปรับสัดส่วนอาหาร (Smart Portion)'), findsOneWidget);
 
     // Tap discard button to test confirmation dialog
-    await tester.tap(find.text('ทิ้งรูปนี้ / ไม่บันทึก'));
+    await tester.tap(find.text('ทิ้งรูปนี้ / ถ่ายใหม่'));
     await tester.pumpAndSettle();
     expect(find.text('ทิ้งผลการสแกนนี้?'), findsOneWidget);
     expect(find.text('ตรวจสอบต่อ'), findsOneWidget);

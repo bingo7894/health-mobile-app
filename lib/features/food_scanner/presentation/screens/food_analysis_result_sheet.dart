@@ -507,208 +507,195 @@ class _FoodAnalysisResultSheetState
                   ),
                 ),
                 const SizedBox(height: 8),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    children: [
-                      'BREAKFAST',
-                      'LUNCH',
-                      'DINNER',
-                      'SNACK',
-                      'PRE_WORKOUT',
-                    ].map((type) {
-                      final isSelected = _selectedMealType == type;
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    'BREAKFAST',
+                    'LUNCH',
+                    'DINNER',
+                    'SNACK',
+                    'PRE_WORKOUT',
+                  ].map((type) {
+                    final isSelected = _selectedMealType == type;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => setState(() => _selectedMealType = type),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primarySoft
+                                : AppColors.surface,
                             borderRadius: BorderRadius.circular(16),
-                            onTap: () =>
-                                setState(() => _selectedMealType = type),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primarySoft
-                                    : AppColors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.border,
-                                  width: isSelected ? 1.8 : 1.0,
-                                ),
-                                boxShadow:
-                                    isSelected ? AppColors.clayShadow : null,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  FluentEmoji.forMealType(type, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    tr.mealTypeName(type),
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w800
-                                          : FontWeight.w600,
-                                      color: isSelected
-                                          ? AppColors.primaryDeep
-                                          : AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                              width: isSelected ? 1.8 : 1.0,
                             ),
+                            boxShadow:
+                                isSelected ? AppColors.clayShadow : null,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FluentEmoji.forMealType(type, size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                tr.mealTypeName(type),
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
+                                  color: isSelected
+                                      ? AppColors.primaryDeep
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Primary Action: Save Meal Button
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: _isSaving ? null : _handleSaveMeal,
-                    child: Ink(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        gradient: _isSaving ? null : AppColors.sunrise,
-                        color: _isSaving ? AppColors.surfaceMuted : null,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: AppColors.clayShadow,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (_isSaving)
-                            const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                color: AppColors.primaryDeep,
-                                strokeWidth: 2.5,
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+
+                // 1. Primary Action: Save Meal Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: _isSaving ? null : _handleSaveMeal,
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          gradient: _isSaving ? null : AppColors.sunrise,
+                          color: _isSaving ? AppColors.surfaceMuted : null,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: AppColors.clayShadow,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (_isSaving)
+                              const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primaryDeep,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            else ...[
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.white,
+                                size: 21,
                               ),
-                            )
-                          else ...[
-                            const Icon(
-                              Icons.bookmark_added_rounded,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                '${tr.text('save_meal_btn')} (+${analysis.calories} kcal)',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  '${tr.text('save_meal_btn')} (+${analysis.calories} kcal)',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    letterSpacing: 0.2,
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
 
-                // Row with Discard & Smart Portion
-                Row(
-                  children: [
-                    // Discard Button
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _isSaving ? null : _handleDiscard,
-                        icon: const Icon(
-                          Icons.delete_outline_rounded,
-                          size: 18,
-                          color: AppColors.rose,
-                        ),
-                        label: Text(
-                          tr.text('discard_meal_btn'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.rose,
+                // 2. Secondary Action: Smart Portion (Full width, zero truncation)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${analysis.thaiName} (${analysis.calories} kcal) พร้อมเข้าสู่ระบบ Smart Portion (Task 3.3)',
                           ),
                         ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: Color(0xFFFFD1D1),
-                            width: 1.5,
-                          ),
-                          backgroundColor: AppColors.roseSoft,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.tune_rounded,
+                      size: 19,
+                      color: AppColors.primaryDeep,
+                    ),
+                    label: Text(
+                      tr.text('proceed_to_portion'),
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryDeep,
                       ),
                     ),
-                    const SizedBox(width: 10),
-
-                    // Smart Portion Button
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${analysis.thaiName} (${analysis.calories} kcal) พร้อมเข้าสู่ระบบ Smart Portion (Task 3.3)',
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.tune_rounded,
-                          size: 18,
-                          color: AppColors.primaryDeep,
-                        ),
-                        label: Text(
-                          tr.text('proceed_to_portion'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primaryDeep,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: AppColors.border,
-                            width: 1.5,
-                          ),
-                          backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(
+                        color: AppColors.border,
+                        width: 1.3,
+                      ),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ],
+                  ),
                 ),
+                const SizedBox(height: 6),
+
+                // 3. Destructive Action: Discard / Retake
+                Center(
+                  child: TextButton.icon(
+                    onPressed: _isSaving ? null : _handleDiscard,
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 17,
+                      color: AppColors.rose,
+                    ),
+                    label: Text(
+                      tr.text('discard_meal_btn'),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.rose,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      minimumSize: const Size(0, 36),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 const SizedBox(height: 16),
               ],
             ),
