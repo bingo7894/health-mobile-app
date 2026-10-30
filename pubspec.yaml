@@ -45,3 +45,4 @@ flutter:
   assets:
     - assets/animations/
     - assets/images/
+    - assets/emojis/

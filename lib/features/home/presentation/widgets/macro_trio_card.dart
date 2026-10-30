@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/app_translations.dart';
+import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 
 /// การ์ดแสดงสัดส่วนสารอาหารหลัก 3 ชนิด (โปรตีน = ฟ้า, คาร์บ = เหลือง, ไขมัน = ชมพูพาสเทล)
-/// จัดวางแนวนอนอ่านง่าย ไม่เบียดกัน และมีแถบความคืบหน้าเคลื่อนไหวนุ่มนวล
+/// ใช้ไอคอน 3D Microsoft Fluent Emoji สไตล์ Claymorphism
 class MacroTrioCard extends StatelessWidget {
   final double proteinG;
   final double carbsG;
@@ -70,7 +71,7 @@ class MacroTrioCard extends StatelessWidget {
             barColor: AppColors.sky,
             badgeColor: AppColors.skySoft,
             textColor: AppColors.skyDeep,
-            emoji: '🐟',
+            emoji: FluentEmojiName.fish,
           ),
           const SizedBox(height: 14),
           _MacroBarRow(
@@ -81,7 +82,7 @@ class MacroTrioCard extends StatelessWidget {
             barColor: AppColors.butter,
             badgeColor: AppColors.butterSoft,
             textColor: AppColors.butterDeep,
-            emoji: '🌾',
+            emoji: FluentEmojiName.rice,
           ),
           const SizedBox(height: 14),
           _MacroBarRow(
@@ -92,7 +93,7 @@ class MacroTrioCard extends StatelessWidget {
             barColor: AppColors.rose,
             badgeColor: AppColors.roseSoft,
             textColor: AppColors.rose,
-            emoji: '🥑',
+            emoji: FluentEmojiName.avocado,
           ),
         ],
       ),
@@ -108,7 +109,7 @@ class _MacroBarRow extends StatelessWidget {
   final Color barColor;
   final Color badgeColor;
   final Color textColor;
-  final String emoji;
+  final FluentEmojiName emoji;
 
   const _MacroBarRow({
     required this.label,
@@ -131,14 +132,14 @@ class _MacroBarRow extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 30,
-              height: 30,
+              width: 32,
+              height: 32,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: badgeColor,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text(emoji, style: const TextStyle(fontSize: 15)),
+              child: FluentEmoji(emoji, size: 20),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -200,4 +201,3 @@ class _MacroBarRow extends StatelessWidget {
     );
   }
 }
-

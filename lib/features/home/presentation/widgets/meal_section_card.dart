@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/app_translations.dart';
+import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
 
 /// การ์ดแสดงรายการอาหารของแต่ละมื้อ (เช้า / กลางวัน / เย็น / ของว่าง / มื้อพิเศษ)
+/// ใช้ไอคอน 3D Microsoft Fluent Emoji
 class MealSectionCard extends StatelessWidget {
   final String mealType;
   final List<MealEntryItem> items;
@@ -19,36 +21,36 @@ class MealSectionCard extends StatelessWidget {
     required this.onAddTap,
   });
 
-  ({String emoji, Color bg, Color accent}) _styleForMeal(String type) {
+  ({FluentEmojiName emoji, Color bg, Color accent}) _styleForMeal(String type) {
     switch (type.toUpperCase()) {
       case 'BREAKFAST':
         return (
-          emoji: '🍳',
+          emoji: FluentEmojiName.cooking,
           bg: AppColors.butterSoft,
           accent: AppColors.butterDeep,
         );
       case 'LUNCH':
         return (
-          emoji: '🍱',
+          emoji: FluentEmojiName.bento,
           bg: AppColors.primarySoft,
           accent: AppColors.primaryDeep,
         );
       case 'DINNER':
         return (
-          emoji: '🍲',
+          emoji: FluentEmojiName.potOfFood,
           bg: AppColors.skySoft,
           accent: AppColors.skyDeep,
         );
       case 'PRE_WORKOUT':
       case 'POST_WORKOUT':
         return (
-          emoji: '⚡',
+          emoji: FluentEmojiName.lightning,
           bg: AppColors.mintSoft,
           accent: AppColors.mint,
         );
       default:
         return (
-          emoji: '🍎',
+          emoji: FluentEmojiName.apple,
           bg: AppColors.roseSoft,
           accent: AppColors.rose,
         );
@@ -69,14 +71,14 @@ class MealSectionCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 48,
+                height: 48,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: style.bg,
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Text(style.emoji, style: const TextStyle(fontSize: 22)),
+                child: FluentEmoji(style.emoji, size: 28),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -205,4 +207,3 @@ class _MealItemRow extends StatelessWidget {
     );
   }
 }
-

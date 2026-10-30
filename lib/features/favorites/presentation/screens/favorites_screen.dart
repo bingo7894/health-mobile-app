@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/locale_provider.dart';
+import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/language_toggle.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/scan_options_sheet.dart';
@@ -51,8 +52,8 @@ class FavoritesScreen extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 88,
-                        height: 88,
+                        width: 92,
+                        height: 92,
                         alignment: Alignment.center,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
@@ -63,9 +64,9 @@ class FavoritesScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        child: const Text(
-                          '🍱',
-                          style: TextStyle(fontSize: 40),
+                        child: const FluentEmoji(
+                          FluentEmojiName.bento,
+                          size: 52,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -106,4 +107,3 @@ class FavoritesScreen extends ConsumerWidget {
     );
   }
 }
-

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/app_translations.dart';
+import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 
 /// การ์ดหลักแสดงสมดุลแคลอรีประจำวัน:
@@ -61,15 +62,16 @@ class CalorieHeroCard extends StatelessWidget {
                                   : AppColors.primarySoft,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              isOver
-                                  ? Icons.warning_amber_rounded
-                                  : Icons.local_fire_department_rounded,
-                              size: 18,
-                              color: isOver
-                                  ? AppColors.error
-                                  : AppColors.primaryDeep,
-                            ),
+                            child: isOver
+                                ? const Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 18,
+                                    color: AppColors.error,
+                                  )
+                                : const FluentEmoji(
+                                    FluentEmojiName.fire,
+                                    size: 20,
+                                  ),
                           ),
                           const SizedBox(height: 6),
                           FittedBox(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/app_translations.dart';
+import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
 
-/// แบนเนอร์สีเหลืองนวล (Butter Soft) ให้คำแนะนำสุขภาพสั้น ๆ เข้าใจง่ายตามข้อมูลจริงของวันนั้น
+/// แบนเนอร์สีเหลืองนวล (Butter Soft) ให้คำแนะนำสุขภาพสั้น ๆ
+/// ใช้ไอคอนพระอาทิตย์ 3D Microsoft Fluent Emoji
 class DailyTipBanner extends StatelessWidget {
   final DailySummaryData summary;
   final int dailyGoal;
@@ -39,18 +41,14 @@ class DailyTipBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.butter.withAlpha(95),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.wb_sunny_rounded,
-              size: 20,
-              color: AppColors.butterDeep,
-            ),
+            child: const FluentEmoji(FluentEmojiName.sun, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -83,4 +81,3 @@ class DailyTipBanner extends StatelessWidget {
     );
   }
 }
-

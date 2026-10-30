@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/locale_provider.dart';
+import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -46,7 +47,10 @@ class ProfileScreen extends ConsumerWidget {
                       shape: BoxShape.circle,
                       gradient: AppColors.sunrise,
                     ),
-                    child: const Text('🥗', style: TextStyle(fontSize: 30)),
+                    child: const FluentEmoji(
+                      FluentEmojiName.salad,
+                      size: 38,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
