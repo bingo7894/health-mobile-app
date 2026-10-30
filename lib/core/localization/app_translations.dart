@@ -1,54 +1,61 @@
 import 'package:flutter/material.dart';
 
-/// คลาสพจนานุกรมคำแปลสองภาษา (Thai & English)
+/// พจนานุกรมสองภาษา (ไทย / English)
 class AppTranslations {
   final Locale locale;
 
   AppTranslations(this.locale);
 
-  static final Map<String, Map<String, String>> _localizedValues = {
+  bool get isThai => locale.languageCode == 'th';
+
+  static const Map<String, Map<String, String>> _values = {
     'th': {
-      // App General
-      'app_title': 'ซูเปอร์แอปสุขภาพ',
-      'app_subtitle': 'AI โภชนาการ & ผู้ช่วยสุขภาพอัจฉริยะ',
-      'loading': 'กำลังโหลดข้อมูล...',
-      'error_occurred': 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
+      // General
+      'app_title': 'Super Health',
+      'app_tagline': 'กินดี อยู่ดี ด้วยผู้ช่วย AI',
       'retry': 'ลองอีกครั้ง',
-      'save': 'บันทึก',
-      'cancel': 'ยกเลิก',
-      'confirm': 'ยืนยัน',
-      'delete': 'ลบ',
-      'edit': 'แก้ไข',
+      'coming_soon': 'ฟีเจอร์นี้กำลังจะมาเร็ว ๆ นี้',
+      'offline_title': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้',
+      'offline_desc': 'ตรวจสอบว่าเปิด Docker / API Gateway (พอร์ต 8080) อยู่หรือไม่',
+      'kcal': 'kcal',
+      'g': 'g',
+
+      // Greetings
+      'greeting_morning': 'อรุณสวัสดิ์ ☀️',
+      'greeting_afternoon': 'สวัสดีตอนบ่าย 🌤️',
+      'greeting_evening': 'สวัสดีตอนเย็น 🌙',
+      'home_headline': 'วันนี้กินอะไรดี?',
 
       // Navigation
-      'nav_home': 'ไดอารี่',
-      'nav_scan': 'สแกน',
-      'nav_analytics': 'สถิติ',
-      'nav_profile': 'โปรไฟล์',
+      'nav_home': 'หน้าหลัก',
+      'nav_stats': 'สถิติ',
+      'nav_favorites': 'เมนูโปรด',
+      'nav_profile': 'ฉัน',
 
-      // Home & Diary
-      'today': 'วันนี้',
-      'daily_summary': 'สรุปโภชนาการวันนี้',
-      'remaining': 'คงเหลือ',
-      'consumed': 'กินไปแล้ว',
+      // Hero calorie card
+      'remaining': 'kcal คงเหลือ',
+      'over_goal': 'kcal เกินเป้า',
+      'eaten': 'กินแล้ว',
       'burned': 'เผาผลาญ',
-      'target': 'เป้าหมาย',
-      'kcal': 'กิโลแคลอรี',
-      'grams': 'กรัม',
-      'milligrams': 'มก.',
+      'goal': 'เป้าหมาย',
 
-      // Macronutrients
+      // Macros
+      'macros_title': 'สารอาหารหลัก',
       'protein': 'โปรตีน',
       'carbs': 'คาร์บ',
       'fat': 'ไขมัน',
-      'sodium': 'โซเดียม',
-      'sugar': 'น้ำตาล',
-      'fiber': 'ใยอาหาร',
-      'macro_distribution': 'สัดส่วนพลังงาน (Macro %)',
+
+      // Tips
+      'tip_title': 'คำแนะนำวันนี้',
+      'tip_start': 'เริ่มบันทึกมื้อแรกของวันได้เลย แค่ถ่ายรูป AI จะคำนวณให้',
+      'tip_protein': 'โปรตีนยังน้อยอยู่ ลองเพิ่มไข่ อกไก่ หรือเต้าหู้ในมื้อถัดไป',
+      'tip_sodium': 'วันนี้โซเดียมค่อนข้างสูง ดื่มน้ำเปล่าเพิ่ม และลดน้ำจิ้มนะ',
+      'tip_over': 'วันนี้แคลอรีเกินเป้าแล้ว มื้อต่อไปลองเน้นผักและโปรตีนไขมันต่ำ',
+      'tip_good': 'สมดุลดีมาก! อย่าลืมดื่มน้ำให้ครบ 8 แก้วนะ',
 
       // Meals
-      'meals_today': 'มื้ออาหารวันนี้',
-      'add_meal': '+ บันทึกมื้อนี้',
+      'meals_title': 'มื้ออาหาร',
+      'meal_empty': 'ยังไม่ได้บันทึก แตะ + เพื่อเพิ่ม',
       'meal_breakfast': 'มื้อเช้า',
       'meal_brunch': 'มื้อสาย',
       'meal_lunch': 'มื้อกลางวัน',
@@ -59,158 +66,191 @@ class AppTranslations {
       'meal_snack': 'ของว่าง',
       'meal_supper': 'มื้อดึก',
       'meal_supplement': 'อาหารเสริม',
-      'no_meals_logged': 'ยังไม่มีรายการอาหารในมื้อนี้',
 
-      // Scanner Sheet
-      'scan_title': 'บันทึกอาหารด้วย AI & บาร์โค้ด',
-      'scan_camera_title': 'ถ่ายรูปอาหาร (AI Vision Scan)',
-      'scan_camera_desc': 'ประเมินแคลอรี สารอาหาร และวัตถุดิบอัตโนมัติ',
-      'scan_barcode_title': 'สแกนบาร์โค้ดสินค้า (Free Scan)',
-      'scan_barcode_desc': 'ดึงข้อมูลสินค้าสะดวกซื้อ ขนม และเครื่องดื่มทันที',
-      'scan_manual_title': 'กรอกรายการด้วยตนเอง',
-      'scan_manual_desc': 'พิมพ์ชื่อและปริมาณอาหารด้วยตัวเอง',
+      // Scan sheet
+      'scan_title': 'บันทึกอาหาร',
+      'scan_subtitle': 'เลือกวิธีที่สะดวกที่สุดสำหรับคุณ',
+      'scan_ai_title': 'ถ่ายรูปอาหาร',
+      'scan_ai_desc': 'AI ประเมินแคลอรีและสารอาหารให้ทันที',
+      'scan_barcode_title': 'สแกนบาร์โค้ด',
+      'scan_barcode_desc': 'ขนม เครื่องดื่ม สินค้าร้านสะดวกซื้อ',
+      'scan_manual_title': 'พิมพ์เอง',
+      'scan_manual_desc': 'ค้นหาหรือกรอกเมนูด้วยตัวเอง',
+      'recommended': 'แนะนำ',
 
-      // AI Loading
-      'ai_analyzing_title': 'AI กำลังวิเคราะห์จานอาหารของคุณ...',
-      'ai_analyzing_desc': 'กำลังประเมินแคลอรี โปรตีน คาร์บ ไขมัน และวัตถุดิบ',
+      // Loading
+      'loading_data': 'กำลังเตรียมข้อมูลสุขภาพของคุณ...',
+      'loading_ai_title': 'AI กำลังดูจานอาหารของคุณ...',
+      'loading_ai_desc': 'กำลังนับแคลอรี โปรตีน คาร์บ และไขมัน',
+      'loading_barcode_title': 'กำลังค้นหาสินค้า...',
+      'loading_barcode_desc': 'ตรวจสอบจากฐานข้อมูลอาหารฟรี',
 
-      // Analytics
-      'analytics_title': 'สถิติและแนวโน้มสุขภาพ',
-      'weekly_trend': 'แนวโน้มแคลอรี 7 วันล่าสุด',
-      'daily_average': 'ค่าเฉลี่ยต่อวัน',
-      'highest_day': 'วันที่กินสูงสุด',
-      'lowest_day': 'วันที่กินต่ำสุด',
-      'days_logged': 'วันที่บันทึกสำเร็จ',
+      // Stats
+      'stats_title': 'สถิติ 7 วัน',
+      'stats_avg': 'เฉลี่ย/วัน',
+      'stats_high': 'สูงสุด',
+      'stats_days': 'วันที่บันทึก',
+      'stats_chart': 'แคลอรีรายวัน',
+      'stats_goal_line': 'เส้นประ = เป้าหมาย',
+      'stats_empty': 'ยังไม่มีข้อมูลในสัปดาห์นี้ ลองบันทึกมื้อแรกดูนะ',
+      'days_unit': 'วัน',
 
-      // Profile & Settings
-      'profile_title': 'โปรไฟล์และเป้าหมายสุขภาพ',
-      'language_setting': 'ภาษา (Language)',
-      'language_thai': 'ภาษาไทย (TH)',
-      'language_english': 'English (EN)',
-      'bmr_tdee_title': 'ค่าการเผาผลาญส่วนบุคคล',
-      'bmr': 'BMR (เผาผลาญพื้นฐาน)',
-      'tdee': 'TDEE (เผาผลาญรวมต่อวัน)',
-      'daily_goal': 'เป้าหมายแคลอรีต่อวัน',
-      'version': 'เวอร์ชัน 1.0.0 (Enterprise Microservices)',
+      // Favorites
+      'fav_title': 'เมนูโปรด',
+      'fav_empty_title': 'ยังไม่มีเมนูโปรด',
+      'fav_empty_desc': 'เก็บมื้อที่กินบ่อยไว้ที่นี่ แล้วบันทึกได้ในแตะเดียว',
+      'fav_cta': 'สแกนอาหารเลย',
+
+      // Profile
+      'profile_title': 'โปรไฟล์ของฉัน',
+      'profile_name': 'ผู้ใช้ทดลอง',
+      'profile_goal_tag': 'เป้าหมาย: รักษาน้ำหนัก',
+      'bmr': 'BMR',
+      'tdee': 'TDEE',
+      'daily_goal': 'เป้าหมาย/วัน',
+      'settings': 'การตั้งค่า',
+      'language': 'ภาษา',
+      'notifications': 'การแจ้งเตือน',
+      'about': 'เกี่ยวกับแอป',
+      'version': 'เวอร์ชัน 1.0.0',
     },
     'en': {
-      // App General
-      'app_title': 'Super Health App',
-      'app_subtitle': 'AI Nutrition & Smart Wellness Assistant',
-      'loading': 'Loading data...',
-      'error_occurred': 'An error occurred. Please try again.',
-      'retry': 'Retry',
-      'save': 'Save',
-      'cancel': 'Cancel',
-      'confirm': 'Confirm',
-      'delete': 'Delete',
-      'edit': 'Edit',
+      // General
+      'app_title': 'Super Health',
+      'app_tagline': 'Eat well, live well with AI',
+      'retry': 'Try again',
+      'coming_soon': 'This feature is coming soon',
+      'offline_title': "Can't reach the server",
+      'offline_desc': 'Make sure Docker / API Gateway (port 8080) is running',
+      'kcal': 'kcal',
+      'g': 'g',
+
+      // Greetings
+      'greeting_morning': 'Good morning ☀️',
+      'greeting_afternoon': 'Good afternoon 🌤️',
+      'greeting_evening': 'Good evening 🌙',
+      'home_headline': 'Ready to eat well?',
 
       // Navigation
-      'nav_home': 'Diary',
-      'nav_scan': 'Scan',
-      'nav_analytics': 'Analytics',
-      'nav_profile': 'Profile',
+      'nav_home': 'Home',
+      'nav_stats': 'Stats',
+      'nav_favorites': 'Favorites',
+      'nav_profile': 'Me',
 
-      // Home & Diary
-      'today': 'Today',
-      'daily_summary': "Today's Nutrition Summary",
-      'remaining': 'Remaining',
-      'consumed': 'Consumed',
+      // Hero calorie card
+      'remaining': 'kcal left',
+      'over_goal': 'kcal over',
+      'eaten': 'Eaten',
       'burned': 'Burned',
-      'target': 'Daily Goal',
-      'kcal': 'kcal',
-      'grams': 'g',
-      'milligrams': 'mg',
+      'goal': 'Goal',
 
-      // Macronutrients
+      // Macros
+      'macros_title': 'Macronutrients',
       'protein': 'Protein',
       'carbs': 'Carbs',
       'fat': 'Fat',
-      'sodium': 'Sodium',
-      'sugar': 'Sugar',
-      'fiber': 'Fiber',
-      'macro_distribution': 'Energy Ratio (Macro %)',
+
+      // Tips
+      'tip_title': "Today's tip",
+      'tip_start': 'Log your first meal — just snap a photo and AI does the math',
+      'tip_protein': 'Protein is low. Try adding eggs, chicken breast or tofu next meal',
+      'tip_sodium': 'Sodium is high today. Drink more water and go easy on sauces',
+      'tip_over': "You're over today's goal. Go for veggies and lean protein next",
+      'tip_good': 'Nicely balanced! Remember to drink 8 glasses of water',
 
       // Meals
-      'meals_today': "Today's Meals",
-      'add_meal': '+ Log This Meal',
+      'meals_title': 'Meals',
+      'meal_empty': 'Not logged yet — tap + to add',
       'meal_breakfast': 'Breakfast',
       'meal_brunch': 'Brunch',
       'meal_lunch': 'Lunch',
-      'meal_afternoon_tea': 'Afternoon Tea',
+      'meal_afternoon_tea': 'Afternoon tea',
       'meal_dinner': 'Dinner',
-      'meal_pre_workout': 'Pre-Workout',
-      'meal_post_workout': 'Post-Workout',
+      'meal_pre_workout': 'Pre-workout',
+      'meal_post_workout': 'Post-workout',
       'meal_snack': 'Snack',
       'meal_supper': 'Supper',
       'meal_supplement': 'Supplement',
-      'no_meals_logged': 'No meals logged yet in this section',
 
-      // Scanner Sheet
-      'scan_title': 'Food Logging with AI & Barcode',
-      'scan_camera_title': 'AI Food Photo Scan',
-      'scan_camera_desc': 'Instantly estimate calories, macros & ingredients',
-      'scan_barcode_title': 'Free Barcode Scan',
-      'scan_barcode_desc': 'Lookup convenience foods, snacks & beverages',
-      'scan_manual_title': 'Manual Food Entry',
-      'scan_manual_desc': 'Type food name and nutrition manually',
+      // Scan sheet
+      'scan_title': 'Log your food',
+      'scan_subtitle': 'Pick the easiest way for you',
+      'scan_ai_title': 'Snap a photo',
+      'scan_ai_desc': 'AI estimates calories & nutrients instantly',
+      'scan_barcode_title': 'Scan barcode',
+      'scan_barcode_desc': 'Snacks, drinks & packaged food',
+      'scan_manual_title': 'Type it in',
+      'scan_manual_desc': 'Search or enter a meal yourself',
+      'recommended': 'Best',
 
-      // AI Loading
-      'ai_analyzing_title': 'AI is analyzing your meal plate...',
-      'ai_analyzing_desc': 'Estimating calories, protein, carbs, fat & ingredients',
+      // Loading
+      'loading_data': 'Preparing your health data...',
+      'loading_ai_title': 'AI is looking at your plate...',
+      'loading_ai_desc': 'Counting calories, protein, carbs & fat',
+      'loading_barcode_title': 'Looking up product...',
+      'loading_barcode_desc': 'Checking the free food database',
 
-      // Analytics
-      'analytics_title': 'Health Statistics & Trends',
-      'weekly_trend': 'Last 7 Days Calorie Trend',
-      'daily_average': 'Daily Average',
-      'highest_day': 'Highest Calorie Day',
-      'lowest_day': 'Lowest Calorie Day',
-      'days_logged': 'Days Logged',
+      // Stats
+      'stats_title': 'Last 7 days',
+      'stats_avg': 'Avg / day',
+      'stats_high': 'Highest',
+      'stats_days': 'Days logged',
+      'stats_chart': 'Daily calories',
+      'stats_goal_line': 'Dashed line = goal',
+      'stats_empty': 'No data this week yet. Log your first meal!',
+      'days_unit': 'days',
 
-      // Profile & Settings
-      'profile_title': 'Profile & Health Goals',
-      'language_setting': 'Language',
-      'language_thai': 'ภาษาไทย (TH)',
-      'language_english': 'English (EN)',
-      'bmr_tdee_title': 'Personal Energy Expenditure',
-      'bmr': 'BMR (Basal Metabolic Rate)',
-      'tdee': 'TDEE (Total Daily Energy)',
-      'daily_goal': 'Daily Calorie Target',
-      'version': 'Version 1.0.0 (Enterprise Microservices)',
+      // Favorites
+      'fav_title': 'Favorites',
+      'fav_empty_title': 'No favorites yet',
+      'fav_empty_desc': 'Save meals you eat often and log them in one tap',
+      'fav_cta': 'Scan a meal',
+
+      // Profile
+      'profile_title': 'My profile',
+      'profile_name': 'Demo user',
+      'profile_goal_tag': 'Goal: maintain weight',
+      'bmr': 'BMR',
+      'tdee': 'TDEE',
+      'daily_goal': 'Daily goal',
+      'settings': 'Settings',
+      'language': 'Language',
+      'notifications': 'Notifications',
+      'about': 'About',
+      'version': 'Version 1.0.0',
     },
   };
 
-  String text(String key) {
-    final langCode = locale.languageCode;
-    return _localizedValues[langCode]?[key] ?? _localizedValues['th']?[key] ?? key;
+  static const _weekdaysTh = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
+  static const _weekdaysEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _weekdaysLongTh = ['วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์', 'วันอาทิตย์'];
+  static const _weekdaysLongEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  static const _monthsTh = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  static const _monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  String text(String key) =>
+      _values[locale.languageCode]?[key] ?? _values['th']?[key] ?? key;
+
+  String itemsCount(int n) => isThai ? '$n รายการ' : '$n ${n == 1 ? 'item' : 'items'}';
+
+  String weekdayShort(int weekday) => (isThai ? _weekdaysTh : _weekdaysEn)[weekday - 1];
+
+  /// เช่น "วันพฤหัสบดี 30 ต.ค." / "Thursday, 30 Oct"
+  String longDate(DateTime d) {
+    final day = (isThai ? _weekdaysLongTh : _weekdaysLongEn)[d.weekday - 1];
+    final month = (isThai ? _monthsTh : _monthsEn)[d.month - 1];
+    return isThai ? '$day ${d.day} $month' : '$day, ${d.day} $month';
+  }
+
+  String greeting(DateTime now) {
+    if (now.hour < 12) return text('greeting_morning');
+    if (now.hour < 17) return text('greeting_afternoon');
+    return text('greeting_evening');
   }
 
   String mealTypeName(String mealType) {
-    switch (mealType.toUpperCase()) {
-      case 'BREAKFAST':
-        return text('meal_breakfast');
-      case 'BRUNCH':
-        return text('meal_brunch');
-      case 'LUNCH':
-        return text('meal_lunch');
-      case 'AFTERNOON_TEA':
-        return text('meal_afternoon_tea');
-      case 'DINNER':
-        return text('meal_dinner');
-      case 'PRE_WORKOUT':
-        return text('meal_pre_workout');
-      case 'POST_WORKOUT':
-        return text('meal_post_workout');
-      case 'SNACK':
-        return text('meal_snack');
-      case 'SUPPER':
-        return text('meal_supper');
-      case 'SUPPLEMENT':
-        return text('meal_supplement');
-      default:
-        return mealType;
-    }
+    final key = 'meal_${mealType.toLowerCase()}';
+    final value = text(key);
+    return value == key ? mealType : value;
   }
 }
-

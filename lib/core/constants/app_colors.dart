@@ -1,47 +1,60 @@
 import 'package:flutter/material.dart';
 
-/// ชุดสีโทนส้ม-ฟ้า-เหลือง สบายตา ไม่แสบตา (Eye-Comfort Warm Modern Pastel Palette)
+/// "Soft Sunrise" palette — ส้ม / ฟ้า / เหลือง โทนพาสเทลอุ่น ๆ สบายตา ไม่แสบตา
+/// พื้นหลังเป็นครีมอุ่น (ไม่ใช่ขาวจ้า) และตัวอักษรเป็นกรมท่าเข้ม (ไม่ใช่ดำสนิท)
 class AppColors {
   AppColors._();
 
-  // Primary: สีส้ม Coral / Sunset (พลังงาน, แคลอรี, จุดเด่น)
-  static const Color orangePrimary = Color(0xFFFF7A45);
-  static const Color orangeLight = Color(0xFFFFECE5);
-  static const Color orangeDark = Color(0xFFE05622);
-  static const Color orangeGradient = Color(0xFFFF9565);
+  // Brand — ส้ม (พลังงาน / แคลอรี / ปุ่มหลัก)
+  static const Color primary = Color(0xFFFF8A4C);
+  static const Color primaryDeep = Color(0xFFEE6F33);
+  static const Color primarySoft = Color(0xFFFFE9DC);
 
-  // Secondary: สีฟ้า Soft Sky / Cyan (สุขภาพ, โปรตีน, ความสงบ น่าเชื่อถือ)
-  static const Color blueSecondary = Color(0xFF38BDF8);
-  static const Color blueLight = Color(0xFFE0F2FE);
-  static const Color blueDark = Color(0xFF0284C7);
-  static const Color blueGradient = Color(0xFF67E8F9);
+  // ฟ้า (สุขภาพ / โปรตีน / ความสงบ)
+  static const Color sky = Color(0xFF4FB3E8);
+  static const Color skyDeep = Color(0xFF2A8BC2);
+  static const Color skySoft = Color(0xFFE3F3FC);
 
-  // Accent: สีเหลือง Soft Honey / Butter (ความสดใส, คาร์โบไฮเดรต, สดชื่น)
-  static const Color yellowAccent = Color(0xFFFBBF24);
-  static const Color yellowLight = Color(0xFFFEF3C7);
-  static const Color yellowDark = Color(0xFFD97706);
+  // เหลือง (สดใส / คาร์บ / คำแนะนำ)
+  static const Color butter = Color(0xFFFFC94D);
+  static const Color butterDeep = Color(0xFFD9971A);
+  static const Color butterSoft = Color(0xFFFFF4D6);
 
-  // Fat indicator / Salmon Pink
-  static const Color fatPink = Color(0xFFF472B6);
-  static const Color fatLight = Color(0xFFFCE7F3);
+  // สีเสริม
+  static const Color rose = Color(0xFFF58FA8); // ไขมัน
+  static const Color roseSoft = Color(0xFFFDE8EE);
+  static const Color mint = Color(0xFF4CC9A0); // ออกกำลังกาย
+  static const Color mintSoft = Color(0xFFE0F7EF);
 
-  // Backgrounds & Surfaces (ถนอมสายตา ไม่ขาวจ้า)
-  static const Color background = Color(0xFFF8FAFC);
+  // Neutrals
+  static const Color background = Color(0xFFFFFAF4);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color cardShadow = Color(0x0C0F172A);
+  static const Color surfaceMuted = Color(0xFFFFF3E8);
+  static const Color textPrimary = Color(0xFF2B2D42);
+  static const Color textSecondary = Color(0xFF6B7083);
+  static const Color textTertiary = Color(0xFFA6AABA);
+  static const Color border = Color(0xFFF2E9DF);
+  static const Color divider = Color(0xFFF5EEE6);
+  static const Color shadow = Color(0x1AB4783C); // เงาโทนอุ่น ไม่ใช่เงาเทา
 
-  // Text & Neutrals (คมชัด สบายตา ไม่ดำสนิท)
-  static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF475569);
-  static const Color textTertiary = Color(0xFF94A3B8);
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color divider = Color(0xFFF1F5F9);
+  // Feedback
+  static const Color error = Color(0xFFE5675C);
+  static const Color errorSoft = Color(0xFFFDECEA);
 
-  // Feedback Colors
-  static const Color success = Color(0xFF10B981);
-  static const Color successLight = Color(0xFFD1FAE5);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color errorLight = Color(0xFFFEE2E2);
+  // Gradients
+  static const LinearGradient sunrise = LinearGradient(
+    colors: [Color(0xFFFF8A4C), Color(0xFFFFB067)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient skyGradient = LinearGradient(
+    colors: [Color(0xFF4FB3E8), Color(0xFF86D3F5)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const List<BoxShadow> softShadow = [
+    BoxShadow(color: shadow, blurRadius: 24, offset: Offset(0, 8)),
+  ];
 }
-

@@ -1,127 +1,180 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/localization/locale_provider.dart';
-import '../../../analytics/presentation/screens/analytics_screen.dart';
-import '../../../food_scanner/presentation/screens/scan_options_sheet.dart';
-import '../../../home/presentation/screens/home_screen.dart';
-import '../../../profile/presentation/screens/profile_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:health_app/core/constants/app_colors.dart';
+import 'package:health_app/core/localization/locale_provider.dart';
+import 'package:health_app/features/analytics/presentation/screens/analytics_screen.dart';
+import 'package:health_app/features/favorites/presentation/screens/favorites_screen.dart';
+import 'package:health_app/features/food_scanner/presentation/screens/scan_options_sheet.dart';
+import 'package:health_app/features/home/presentation/screens/home_screen.dart';
+import 'package:health_app/features/profile/presentation/screens/profile_screen.dart';
 
-/// หน้าจอหลักจัดการการสลับแท็บเมนูและปุ่มสแกนอาหารตรงกลาง
-class MainNavigationScreen extends StatefulWidget {
+final currentTabProvider = StateProvider<int>((ref) => 0);
+
+/// แถบเมนูด้านล่างแบบสมมาตร 4 แท็บ + ปุ่มสแกนอาหารตรงกลาง:
+/// [หน้าหลัก]  [สถิติ]   ( 📷 )   [เมนูโปรด]  [ฉัน]
+class MainNavigationScreen extends ConsumerWidget {
   const MainNavigationScreen({super.key});
 
-  @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
+  static const _screens = [
     HomeScreen(),
     AnalyticsScreen(),
+    FavoritesScreen(),
     ProfileScreen(),
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final tr = context.tr;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentTab = ref.watch(currentTabProvider);
+    final tr = ref.watch(appTranslationsProvider);
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: AppColors.background,
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentTab,
         children: _screens,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => ScanOptionsSheet.show(context),
-        backgroundColor: AppColors.orangePrimary,
-        elevation: 6,
-        shape: const CircleBorder(),
-        child: Container(
-          width: 58,
-          height: 58,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [AppColors.orangePrimary, AppColors.orangeGradient],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Container(
+        width: 62,
+        height: 62,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: AppColors.sunrise,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withAlpha(95),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
-          ),
-          child: const Icon(
-            Icons.camera_alt_rounded,
-            color: Colors.white,
-            size: 28,
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => ScanOptionsSheet.show(context),
+            child: const Icon(
+              Icons.camera_alt_rounded,
+              color: Colors.white,
+              size: 27,
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: AppColors.surface,
-        elevation: 10,
-        surfaceTintColor: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        height: 68,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Tab 0: Home / Diary
-            _buildNavItem(
-              index: 0,
-              icon: Icons.menu_book_rounded,
-              label: tr.text('nav_home'),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+          boxShadow: AppColors.softShadow,
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 68,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.wb_sunny_outlined,
+                    activeIcon: Icons.wb_sunny_rounded,
+                    label: tr.text('nav_home'),
+                    selected: currentTab == 0,
+                    onTap: () =>
+                        ref.read(currentTabProvider.notifier).state = 0,
+                  ),
+                ),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.bar_chart_outlined,
+                    activeIcon: Icons.bar_chart_rounded,
+                    label: tr.text('nav_stats'),
+                    selected: currentTab == 1,
+                    onTap: () =>
+                        ref.read(currentTabProvider.notifier).state = 1,
+                  ),
+                ),
+                // Space reserved for the center camera FAB
+                const SizedBox(width: 72),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.favorite_border_rounded,
+                    activeIcon: Icons.favorite_rounded,
+                    label: tr.text('nav_favorites'),
+                    selected: currentTab == 2,
+                    onTap: () =>
+                        ref.read(currentTabProvider.notifier).state = 2,
+                  ),
+                ),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.person_outline_rounded,
+                    activeIcon: Icons.person_rounded,
+                    label: tr.text('nav_profile'),
+                    selected: currentTab == 3,
+                    onTap: () =>
+                        ref.read(currentTabProvider.notifier).state = 3,
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(width: 48), // Gap for floating action button
-
-            // Tab 1: Analytics
-            _buildNavItem(
-              index: 1,
-              icon: Icons.bar_chart_rounded,
-              label: tr.text('nav_analytics'),
-            ),
-
-            // Tab 2: Profile
-            _buildNavItem(
-              index: 2,
-              icon: Icons.person_outline_rounded,
-              label: tr.text('nav_profile'),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildNavItem({
-    required int index,
-    required IconData icon,
-    required String label,
-  }) {
-    final isSelected = _currentIndex == index;
-    final color = isSelected ? AppColors.orangePrimary : AppColors.textTertiary;
+class _NavBarItem extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavBarItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? AppColors.primaryDeep : AppColors.textTertiary;
 
     return InkWell(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 24),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: selected ? AppColors.primarySoft : Colors.transparent,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                selected ? activeIcon : icon,
+                size: 22,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 3),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 11.5,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 color: color,
               ),
             ),
@@ -131,4 +184,3 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 }
-

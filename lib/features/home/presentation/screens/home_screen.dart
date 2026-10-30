@@ -1,181 +1,273 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/localization/locale_provider.dart';
-import '../../../../core/widgets/language_switcher_button.dart';
-import '../../../../core/widgets/shimmer_loading.dart';
+import 'package:health_app/core/constants/app_colors.dart';
+import 'package:health_app/core/localization/locale_provider.dart';
+import 'package:health_app/core/widgets/food_loading_animation.dart';
+import 'package:health_app/core/widgets/language_toggle.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/scan_options_sheet.dart';
-import '../providers/daily_summary_provider.dart';
-import '../widgets/calorie_budget_card.dart';
-import '../widgets/macro_progress_bar.dart';
-import '../widgets/meal_timeline_card.dart';
+import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
+import 'package:health_app/features/home/presentation/providers/daily_summary_provider.dart';
+import 'package:health_app/features/home/presentation/widgets/calorie_hero_card.dart';
+import 'package:health_app/features/home/presentation/widgets/daily_tip_banner.dart';
+import 'package:health_app/features/home/presentation/widgets/macro_trio_card.dart';
+import 'package:health_app/features/home/presentation/widgets/meal_section_card.dart';
 
-/// หน้าหลักของสมุดบันทึกอาหารและโภชนาการประจำวัน (Home / Food Diary)
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
+  static const int _dailyCalorieGoal = 2000;
+  static const List<String> _standardMealOrder = [
+    'BREAKFAST',
+    'LUNCH',
+    'DINNER',
+    'SNACK',
+  ];
+
+  List<String> _orderedMealTypes(Map<String, List<MealEntryItem>> map) {
+    final result = <String>[..._standardMealOrder];
+    for (final key in map.keys) {
+      final upper = key.toUpperCase();
+      if (!result.contains(upper)) {
+        result.add(key);
+      }
+    }
+    return result;
+  }
+
+  List<MealEntryItem> _itemsFor(
+    Map<String, List<MealEntryItem>> map,
+    String targetType,
+  ) {
+    for (final entry in map.entries) {
+      if (entry.key.toUpperCase() == targetType.toUpperCase()) {
+        return entry.value;
+      }
+    }
+    return const [];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tr = context.tr;
+    final tr = ref.watch(appTranslationsProvider);
     final summaryAsync = ref.watch(dailySummaryProvider);
+    final now = DateTime.now();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
-          color: AppColors.orangePrimary,
-          onRefresh: () async {
-            ref.invalidate(dailySummaryProvider);
-          },
+          color: AppColors.primary,
+          backgroundColor: AppColors.surface,
+          onRefresh: () => ref.refresh(dailySummaryProvider.future),
           child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
             slivers: [
-              // Top Greeting & Language Switcher Bar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              // Top Greeting Header + Language Switcher (Guaranteed Zero Overflow)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                sliver: SliverToBoxAdapter(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            tr.text('today'),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.orangePrimary,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${tr.greeting(now)} · ${tr.longDate(now)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            tr.text('app_title'),
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                            const SizedBox(height: 4),
+                            Text(
+                              tr.text('home_headline'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.3,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      // 1-Tap Language Toggle Button (TH | EN)
-                      const LanguageSwitcherButton(),
+                      const SizedBox(width: 12),
+                      const LanguageToggle(),
                     ],
                   ),
                 ),
               ),
 
-              // Summary Content
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: summaryAsync.when(
-                  loading: () => SliverList(
-                    delegate: SliverChildListDelegate([
-                      const ShimmerLoading(width: double.infinity, height: 180, borderRadius: 24),
-                      const SizedBox(height: 16),
-                      const ShimmerLoading(width: double.infinity, height: 120, borderRadius: 24),
-                      const SizedBox(height: 16),
-                      const ShimmerLoading(width: double.infinity, height: 80, borderRadius: 20),
-                    ]),
-                  ),
-                  error: (err, _) => SliverToBoxAdapter(
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppColors.errorLight,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+              // Main Content Body
+              summaryAsync.when(
+                loading: () => SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 36),
-                          const SizedBox(height: 10),
-                          Text(
-                            tr.text('error_occurred'),
-                            style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold),
+                          const FoodLoadingAnimation(
+                            size: 160,
+                            lottieAsset: 'assets/animations/food_loading.json',
                           ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
+                          const SizedBox(height: 16),
+                          Text(
+                            tr.text('loading_data'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          const BouncingDots(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                error: (_, __) => SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.cloud_off_rounded,
+                            size: 52,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            tr.text('offline_title'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            tr.text('offline_desc'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          ElevatedButton.icon(
                             onPressed: () => ref.invalidate(dailySummaryProvider),
-                            child: Text(tr.text('retry')),
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: Text(tr.text('retry')),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  data: (data) {
-                    final mealsMap = data.mealsByMealType;
-                    const standardMealTypes = ['BREAKFAST', 'LUNCH', 'PRE_WORKOUT', 'DINNER', 'SNACK'];
+                ),
+                data: (summary) {
+                  final mealTypes = _orderedMealTypes(summary.mealsByMealType);
 
-                    return SliverList(
+                  return SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
+                    sliver: SliverList(
                       delegate: SliverChildListDelegate([
-                        // 1. Calorie Budget Ring & Details
-                        CalorieBudgetCard(
-                          consumedCalories: data.totalCaloriesIn,
-                          targetCalories: 2000,
-                          burnedCalories: data.totalCaloriesBurned,
+                        CalorieHeroCard(
+                          dailyGoal: _dailyCalorieGoal,
+                          eaten: summary.totalCaloriesIn,
+                          burned: summary.totalCaloriesBurned,
+                          tr: tr,
                         ),
-                        const SizedBox(height: 16),
-
-                        // 2. Macro Nutrients Ratio (Carbs / Protein / Fat)
-                        MacroProgressBar(
-                          proteinG: data.totalProteinG,
-                          carbsG: data.totalCarbsG,
-                          fatG: data.totalFatG,
-                          proteinPct: data.proteinPercentage,
-                          carbsPct: data.carbsPercentage,
-                          fatPct: data.fatPercentage,
+                        const SizedBox(height: 14),
+                        DailyTipBanner(
+                          summary: summary,
+                          dailyGoal: _dailyCalorieGoal,
+                          tr: tr,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 14),
+                        MacroTrioCard(
+                          proteinG: summary.totalProteinG,
+                          carbsG: summary.totalCarbsG,
+                          fatG: summary.totalFatG,
+                          proteinPct: summary.proteinPercentage,
+                          carbsPct: summary.carbsPercentage,
+                          fatPct: summary.fatPercentage,
+                          tr: tr,
+                        ),
+                        const SizedBox(height: 22),
 
-                        // 3. Section Title: Today's Meals
+                        // Section header: Meals + clean count badge
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              tr.text('meals_today'),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                            Expanded(
+                              child: Text(
+                                tr.text('meals_title'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
-                                color: AppColors.blueLight,
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.skySoft,
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: Text(
-                                '${data.totalMealsCount} ${tr.text('nav_home')}',
+                                tr.itemsCount(summary.totalMealsCount),
                                 style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.blueDark,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.skyDeep,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
 
-                        // 4. Meal Cards Timeline
-                        ...standardMealTypes.map((type) {
-                          final items = (mealsMap[type] as List<dynamic>?) ?? [];
-                          return MealTimelineCard(
-                            mealType: type,
-                            items: items,
-                            onAddMeal: () {
-                              ScanOptionsSheet.show(context);
-                            },
-                          );
-                        }),
-
-                        const SizedBox(height: 80), // Bottom padding for FAB
+                        for (var i = 0; i < mealTypes.length; i++) ...[
+                          if (i > 0) const SizedBox(height: 12),
+                          MealSectionCard(
+                            mealType: mealTypes[i],
+                            items: _itemsFor(
+                              summary.mealsByMealType,
+                              mealTypes[i],
+                            ),
+                            tr: tr,
+                            onAddTap: () => ScanOptionsSheet.show(
+                              context,
+                              mealType: mealTypes[i],
+                            ),
+                          ),
+                        ],
                       ]),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -184,4 +276,3 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 }
-
