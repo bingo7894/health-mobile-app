@@ -70,8 +70,12 @@ class MealOrderNotifier extends StateNotifier<List<String>> {
       }
     }
     if (changed) {
-      state = current;
-      _saveOrder(current);
+      Future.microtask(() {
+        if (mounted) {
+          state = current;
+          _saveOrder(current);
+        }
+      });
     }
   }
 

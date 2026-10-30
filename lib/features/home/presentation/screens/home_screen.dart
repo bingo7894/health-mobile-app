@@ -80,6 +80,14 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<AsyncValue<DailySummaryData>>(dailySummaryProvider, (_, next) {
+      next.whenData((summary) {
+        ref
+            .read(mealOrderProvider.notifier)
+            .syncWithAvailableTypes(summary.mealsByMealType.keys);
+      });
+    });
+
     final tr = ref.watch(appTranslationsProvider);
     final summaryAsync = ref.watch(dailySummaryProvider);
     final now = DateTime.now();
@@ -214,10 +222,14 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 data: (summary) {
-                  ref
-                      .read(mealOrderProvider.notifier)
-                      .syncWithAvailableTypes(summary.mealsByMealType.keys);
-                  final mealTypes = ref.watch(mealOrderProvider);
+                  final savedOrder = ref.watch(mealOrderProvider);
+                  final mealTypes = <String>[...savedOrder];
+                  for (final key in summary.mealsByMealType.keys) {
+                    final upper = key.toUpperCase();
+                    if (!mealTypes.contains(upper)) {
+                      mealTypes.add(upper);
+                    }
+                  }
 
                   return SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
