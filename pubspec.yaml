@@ -1,5 +1,5 @@
 name: health_app
-description: "A new Flutter project."
+description: "Super Health App - AI Nutrition, Barcode Scanner & Wellness"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,21 +10,40 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
-  
-  # เพิ่มแพ็กเกจสำหรับระบบใหญ่และเชื่อม API
-  dio: ^5.4.0
-  flutter_riverpod: ^2.5.0
-  image_picker: ^1.0.7
-  flutter_image_compress: ^2.3.0
+
+  # State Management & Networking
+  flutter_riverpod: ^2.5.1
+  dio: ^5.4.3+1
+
+  # Typography, Theming & UI
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  shimmer: ^3.0.0
   fl_chart: ^0.68.0
-  intl: ^0.19.0
-  flutter_secure_storage: ^9.0.0
+
+  # Animations
+  lottie: ^3.1.2
+  rive: ^0.13.4
+
+  # Hardware & Scanner
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
+  mobile_scanner: ^5.2.3
+
+  # Utilities & Storage
+  intl: ^0.20.3
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/animations/
+    - assets/images/
