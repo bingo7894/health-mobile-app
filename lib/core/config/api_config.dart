@@ -6,12 +6,16 @@ class ApiConfig {
 
   static const String _envUrl = String.fromEnvironment('API_URL');
 
+  /// Dynamic Host switch: ถ้า 10.0.2.2 หรือ localhost อันไหนเชื่อมต่อสำเร็จ จะจำไว้ใช้
+  static String? dynamicBaseUrl;
+
   /// Default Base URL สำหรับ API Gateway
-  /// - รองรับ `--dart-define=API_URL=http://192.168.x.x:8080` สำหรับเครื่องจริงผ่าน Wi-Fi
-  /// - Android Emulator ใช้ `10.0.2.2:8080`
-  /// - iOS / Web / Desktop (และ USB + `adb reverse`) ใช้ `localhost:8080`
+  /// - รองรับ `--dart-define=API_URL=http://192.168.x.x:8080`
+  /// - เครื่องจริงผ่านสาย USB (adb reverse) ใช้ `http://localhost:8080`
+  /// - Android Emulator ใช้ `http://10.0.2.2:8080`
   static String get baseUrl {
     if (_envUrl.isNotEmpty) return _envUrl;
+    if (dynamicBaseUrl != null) return dynamicBaseUrl!;
     if (kIsWeb) return 'http://localhost:8080';
     if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8080';
