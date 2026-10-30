@@ -12,6 +12,8 @@ import 'package:health_app/features/food_scanner/data/models/food_analysis_model
 import 'package:health_app/features/food_scanner/presentation/screens/food_scanner_screen.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/food_analysis_result_sheet.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/food_photo_review_sheet.dart';
+import 'package:health_app/features/food_scanner/presentation/screens/smart_portion_screen.dart';
+import 'package:health_app/features/food_scanner/domain/utils/macro_calculator.dart';
 import 'package:health_app/main.dart';
 
 void main() {
@@ -177,5 +179,58 @@ void main() {
   test('FoodGatekeeper fallback works when file does not exist', () async {
     final result = await FoodGatekeeper.verifyFood('non_existent_file.jpg');
     expect(result.isFood, isTrue);
+  });
+
+  test('MacroCalculator accurately scales calories and macros proportionally', () {
+    final result = MacroCalculator.calculate(
+      baseWeightGrams: 300.0,
+      baseCalories: 600,
+      baseProteinG: 30.0,
+      baseCarbsG: 60.0,
+      baseFatG: 20.0,
+      baseSodiumMg: 800.0,
+      baseSugarG: 10.0,
+      baseFiberG: 4.0,
+      targetWeightGrams: 150.0, // 0.5x
+    );
+
+    expect(result.ratio, equals(0.5));
+    expect(result.calories, equals(300));
+    expect(result.proteinG, equals(15.0));
+    expect(result.carbsG, equals(30.0));
+    expect(result.fatG, equals(10.0));
+    expect(result.sodiumMg, equals(400.0));
+  });
+
+  testWidgets('SmartPortionScreen renders slider, preset chips and recalculates live',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: SmartPortionScreen(
+            analysis: FoodAnalysisModel.sample(),
+            initialMealType: 'LUNCH',
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    expect(find.text('ปรับสัดส่วนอาหาร (Smart Portion)'), findsOneWidget);
+    expect(find.text('ข้าวกะเพราไก่ไข่ดาว'), findsOneWidget);
+    expect(find.text('620'), findsOneWidget); // base calories
+    expect(find.text('0.5 จาน (ครึ่งเดียว)'), findsOneWidget);
+
+    // Tap 0.5x chip
+    await tester.tap(find.text('0.5 จาน (ครึ่งเดียว)'));
+    await tester.pump();
+
+    // 620 * 0.5 = 310 kcal
+    expect(find.text('310'), findsOneWidget);
+    expect(find.text('175 กรัม'), findsOneWidget); // 350 * 0.5 = 175g
   });
 }

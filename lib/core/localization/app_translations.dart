@@ -122,6 +122,18 @@ class AppTranslations {
       'meal_saved_success': 'บันทึกมื้ออาหารสำเร็จ!',
       'meal_save_failed': 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง',
 
+      // Smart Portion
+      'smart_portion_title': 'ปรับสัดส่วนอาหาร (Smart Portion)',
+      'portion_grams': 'น้ำหนักอาหาร (กรัม)',
+      'chip_half_portion': '0.5 จาน (ครึ่งเดียว)',
+      'chip_single_portion': '1.0 จาน (ตาม AI)',
+      'chip_one_half_portion': '1.5 จาน (อิ่มจุก)',
+      'chip_double_portion': '2.0 จาน (พิเศษ 2 เท่า)',
+      'save_adjusted_meal': 'บันทึกมื้ออาหารที่ปรับแล้ว',
+      'base_ai_estimate': 'สัดส่วนเดิมจาก AI:',
+      'macro_breakdown': 'สารอาหารหลังปรับสัดส่วน',
+      'grams_unit': 'กรัม',
+
       // Loading
       'loading_data': 'กำลังเตรียมข้อมูลสุขภาพของคุณ...',
       'loading_ai_title': 'AI กำลังดูจานอาหารของคุณ...',
@@ -270,6 +282,18 @@ class AppTranslations {
       'discard_confirm': 'Discard',
       'meal_saved_success': 'Meal saved successfully!',
       'meal_save_failed': 'Failed to save meal. Please try again.',
+
+      // Smart Portion
+      'smart_portion_title': 'Smart Portion Adjustment',
+      'portion_grams': 'Portion Weight (grams)',
+      'chip_half_portion': '0.5 plate (half)',
+      'chip_single_portion': '1.0 plate (regular)',
+      'chip_one_half_portion': '1.5 plate (large)',
+      'chip_double_portion': '2.0 plate (double)',
+      'save_adjusted_meal': 'Save Adjusted Meal',
+      'base_ai_estimate': 'Original AI estimate:',
+      'macro_breakdown': 'Nutrients After Adjustment',
+      'grams_unit': 'g',
 
       // Loading
       'loading_data': 'Preparing your health data...',

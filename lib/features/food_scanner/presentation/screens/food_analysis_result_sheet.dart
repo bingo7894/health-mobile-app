@@ -9,6 +9,7 @@ import 'package:health_app/core/widgets/soft_card.dart';
 import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
 import 'package:health_app/features/home/presentation/providers/daily_summary_provider.dart';
 import '../../data/models/food_analysis_model.dart';
+import 'smart_portion_screen.dart';
 
 class FoodAnalysisResultSheet extends ConsumerStatefulWidget {
   final FoodAnalysisModel analysis;
@@ -632,15 +633,16 @@ class _FoodAnalysisResultSheetState
                   width: double.infinity,
                   height: 48,
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${analysis.thaiName} (${analysis.calories} kcal) พร้อมเข้าสู่ระบบ Smart Portion (Task 3.3)',
-                          ),
-                        ),
+                    onPressed: () async {
+                      final saved = await SmartPortionScreen.push(
+                        context,
+                        analysis: analysis,
+                        imageFile: widget.imageFile,
+                        initialMealType: _selectedMealType,
                       );
+                      if (saved == true && context.mounted) {
+                        Navigator.of(context).pop(true);
+                      }
                     },
                     icon: const Icon(
                       Icons.tune_rounded,
