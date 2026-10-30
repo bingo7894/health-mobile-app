@@ -112,6 +112,15 @@ class AppTranslations {
       'dietitian_advice': 'คำแนะนำจากนักกำหนดอาหาร',
       'proceed_to_portion': 'ปรับสัดส่วนอาหาร (Smart Portion)',
       'save_directly': 'บันทึกลงมื้ออาหารเลย',
+      'save_meal_btn': 'บันทึกมื้ออาหาร',
+      'discard_meal_btn': 'ทิ้งรูปนี้ / ไม่บันทึก',
+      'select_meal_category': 'เลือกมื้ออาหารที่จะบันทึก:',
+      'confirm_discard_title': 'ทิ้งผลการสแกนนี้?',
+      'confirm_discard_desc': 'ข้อมูลโภชนาการนี้จะไม่ถูกบันทึก และจะกลับไปยังหน้ากล้องถ่ายรูป',
+      'keep_editing': 'ตรวจสอบต่อ',
+      'discard_confirm': 'ยืนยันที่จะทิ้ง',
+      'meal_saved_success': 'บันทึกมื้ออาหารสำเร็จ!',
+      'meal_save_failed': 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง',
 
       // Loading
       'loading_data': 'กำลังเตรียมข้อมูลสุขภาพของคุณ...',
@@ -252,6 +261,15 @@ class AppTranslations {
       'dietitian_advice': 'Dietitian advice',
       'proceed_to_portion': 'Adjust portion (Smart Portion)',
       'save_directly': 'Save meal directly',
+      'save_meal_btn': 'Save Meal',
+      'discard_meal_btn': 'Discard / Don\'t save',
+      'select_meal_category': 'Select meal category:',
+      'confirm_discard_title': 'Discard this scan?',
+      'confirm_discard_desc': 'This nutrition data will not be saved and you will return to the camera.',
+      'keep_editing': 'Keep reviewing',
+      'discard_confirm': 'Discard',
+      'meal_saved_success': 'Meal saved successfully!',
+      'meal_save_failed': 'Failed to save meal. Please try again.',
 
       // Loading
       'loading_data': 'Preparing your health data...',

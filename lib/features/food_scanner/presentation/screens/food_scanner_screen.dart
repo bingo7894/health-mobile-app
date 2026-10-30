@@ -100,13 +100,47 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
       );
     } else if (state.status == FoodScanStatus.success &&
         state.analysisResult != null) {
-      FoodAnalysisResultSheet.show(
+      final analysis = state.analysisResult!;
+      final saved = await FoodAnalysisResultSheet.show(
         context,
-        analysis: state.analysisResult!,
+        analysis: analysis,
         imageFile: state.compressedResult?.file ?? file,
         compression: state.compressedResult,
+        initialMealType: widget.mealType,
         tr: tr,
       );
+
+      if (!mounted) return;
+
+      if (saved == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${analysis.thaiName} (+${analysis.calories} kcal) ${tr.text('meal_saved_success')}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        Navigator.of(context).pop(true);
+      } else {
+        controller.reset();
+      }
     } else if (state.status == FoodScanStatus.error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(state.errorMessage ?? 'Analysis failed')),

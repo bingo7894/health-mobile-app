@@ -256,6 +256,47 @@ class NutritionRemoteDataSource {
       return WeeklySummaryData.sample();
     }
   }
+
+  /// บันทึกมื้ออาหารใหม่เข้าสู่ระบบ (POST /api/v1/nutrition/meals)
+  Future<bool> logMeal({
+    required String userId,
+    required String mealType,
+    required String foodName,
+    required double portionWeightGrams,
+    required int calories,
+    required double proteinG,
+    required double carbsG,
+    required double fatG,
+    double sodiumMg = 0.0,
+    double sugarG = 0.0,
+    double fiberG = 0.0,
+    String cookingMethod = 'BOILED',
+    String? imageUrl,
+  }) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.meals,
+        data: {
+          'userId': userId,
+          'mealType': mealType,
+          'foodName': foodName,
+          'portionWeightGrams': portionWeightGrams,
+          'cookingMethod': cookingMethod,
+          'calories': calories,
+          'proteinG': proteinG,
+          'carbsG': carbsG,
+          'fatG': fatG,
+          'sodiumMg': sodiumMg,
+          'sugarG': sugarG,
+          'fiberG': fiberG,
+          if (imageUrl != null) 'imageUrl': imageUrl,
+        },
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 final nutritionDataSourceProvider = Provider<NutritionRemoteDataSource>((ref) {

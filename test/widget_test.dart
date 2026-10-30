@@ -101,12 +101,14 @@ void main() {
     final dummyFile = File('dummy_food.jpg');
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: FoodAnalysisResultSheet(
-            analysis: FoodAnalysisModel.sample(),
-            imageFile: dummyFile,
-            tr: AppTranslations(const Locale('th')),
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: FoodAnalysisResultSheet(
+              analysis: FoodAnalysisModel.sample(),
+              imageFile: dummyFile,
+              tr: AppTranslations(const Locale('th')),
+            ),
           ),
         ),
       ),
@@ -116,13 +118,27 @@ void main() {
     expect(find.text('ข้าวกะเพราไก่ไข่ดาว'), findsOneWidget);
     expect(find.text('620 kcal'), findsOneWidget);
 
-    // Scroll down to make action button visible in ListView
+    // Scroll down to make action buttons visible in ListView
     await tester.scrollUntilVisible(
-      find.text('ปรับสัดส่วนอาหาร (Smart Portion)'),
+      find.text('ทิ้งรูปนี้ / ไม่บันทึก'),
       100,
       scrollable: find.byType(Scrollable).first,
     );
+    expect(find.text('เลือกมื้ออาหารที่จะบันทึก:'), findsOneWidget);
+    expect(find.text('ทิ้งรูปนี้ / ไม่บันทึก'), findsOneWidget);
     expect(find.text('ปรับสัดส่วนอาหาร (Smart Portion)'), findsOneWidget);
+
+    // Tap discard button to test confirmation dialog
+    await tester.tap(find.text('ทิ้งรูปนี้ / ไม่บันทึก'));
+    await tester.pumpAndSettle();
+    expect(find.text('ทิ้งผลการสแกนนี้?'), findsOneWidget);
+    expect(find.text('ตรวจสอบต่อ'), findsOneWidget);
+    expect(find.text('ยืนยันที่จะทิ้ง'), findsOneWidget);
+
+    // Cancel discard dialog
+    await tester.tap(find.text('ตรวจสอบต่อ'));
+    await tester.pumpAndSettle();
+    expect(find.text('ทิ้งผลการสแกนนี้?'), findsNothing);
   });
 
   testWidgets('FoodPhotoReviewSheet renders preview, quick chips and appends notes',

@@ -1,16 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/constants/app_colors.dart';
 import 'package:health_app/core/localization/app_translations.dart';
 import 'package:health_app/core/utils/image_compressor_helper.dart';
 import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
+import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
+import 'package:health_app/features/home/presentation/providers/daily_summary_provider.dart';
 import '../../data/models/food_analysis_model.dart';
 
-class FoodAnalysisResultSheet extends StatelessWidget {
+class FoodAnalysisResultSheet extends ConsumerStatefulWidget {
   final FoodAnalysisModel analysis;
   final File imageFile;
   final CompressedImageResult? compression;
+  final String? initialMealType;
   final AppTranslations tr;
 
   const FoodAnalysisResultSheet({
@@ -18,17 +22,19 @@ class FoodAnalysisResultSheet extends StatelessWidget {
     required this.analysis,
     required this.imageFile,
     this.compression,
+    this.initialMealType,
     required this.tr,
   });
 
-  static Future<void> show(
+  static Future<bool?> show(
     BuildContext context, {
     required FoodAnalysisModel analysis,
     required File imageFile,
     CompressedImageResult? compression,
+    String? initialMealType,
     required AppTranslations tr,
   }) {
-    return showModalBottomSheet<void>(
+    return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -36,17 +42,157 @@ class FoodAnalysisResultSheet extends StatelessWidget {
         analysis: analysis,
         imageFile: imageFile,
         compression: compression,
+        initialMealType: initialMealType,
         tr: tr,
       ),
     );
   }
 
   @override
+  ConsumerState<FoodAnalysisResultSheet> createState() =>
+      _FoodAnalysisResultSheetState();
+}
+
+class _FoodAnalysisResultSheetState
+    extends ConsumerState<FoodAnalysisResultSheet> {
+  late String _selectedMealType;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMealType = widget.initialMealType ?? _guessMealType();
+  }
+
+  String _guessMealType() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 11) return 'BREAKFAST';
+    if (hour >= 11 && hour < 16) return 'LUNCH';
+    if (hour >= 16 && hour < 21) return 'DINNER';
+    return 'SNACK';
+  }
+
+  Future<void> _handleSaveMeal() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    final tr = widget.tr;
+    final analysis = widget.analysis;
+
+    try {
+      final ok = await ref.read(nutritionDataSourceProvider).logMeal(
+            userId: kDefaultUserId,
+            mealType: _selectedMealType,
+            foodName: analysis.thaiName.isNotEmpty
+                ? analysis.thaiName
+                : analysis.foodName,
+            portionWeightGrams: analysis.portionWeightGrams,
+            cookingMethod: analysis.cookingMethod,
+            calories: analysis.calories,
+            proteinG: analysis.proteinG,
+            carbsG: analysis.carbsG,
+            fatG: analysis.fatG,
+            sodiumMg: analysis.sodiumMg,
+            sugarG: analysis.sugarG,
+            fiberG: analysis.fiberG,
+          );
+
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+
+      if (ok) {
+        ref.invalidate(dailySummaryProvider);
+        Navigator.of(context).pop(true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(tr.text('meal_save_failed')),
+            backgroundColor: AppColors.rose,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.rose,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDiscard() async {
+    final tr = widget.tr;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: Text(
+          tr.text('confirm_discard_title'),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          tr.text('confirm_discard_desc'),
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              tr.text('keep_editing'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.rose,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              tr.text('discard_confirm'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      Navigator.of(context).pop(false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final analysis = widget.analysis;
+    final compression = widget.compression;
+    final tr = widget.tr;
     final confPercent = (analysis.confidenceScore * 100).toStringAsFixed(0);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.88,
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -71,7 +217,7 @@ class FoodAnalysisResultSheet extends StatelessWidget {
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
               children: [
                 // Image preview with 3D frame
                 Center(
@@ -86,7 +232,7 @@ class FoodAnalysisResultSheet extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(22),
                       child: Image.file(
-                        imageFile,
+                        widget.imageFile,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -108,7 +254,7 @@ class FoodAnalysisResultSheet extends StatelessWidget {
                         border: Border.all(color: Colors.white, width: 1.2),
                       ),
                       child: Text(
-                        '⚡ ${compression!.originalSizeKb} ➔ ${compression!.compressedSizeKb} (-${compression!.reductionPercent.toStringAsFixed(0)}%)',
+                        '⚡ ${compression.originalSizeKb} ➔ ${compression.compressedSizeKb} (-${compression.reductionPercent.toStringAsFixed(0)}%)',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -351,27 +497,217 @@ class FoodAnalysisResultSheet extends StatelessWidget {
                   const SizedBox(height: 16),
                 ],
 
-                // Action buttons: Smart Portion (Task 3.3 preview)
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '${analysis.thaiName} (${analysis.calories} kcal) พร้อมเข้าสู่ระบบ Smart Portion (Task 3.3)',
+                // Meal Category Selector
+                Text(
+                  tr.text('select_meal_category'),
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      'BREAKFAST',
+                      'LUNCH',
+                      'DINNER',
+                      'SNACK',
+                      'PRE_WORKOUT',
+                    ].map((type) {
+                      final isSelected = _selectedMealType == type;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () =>
+                                setState(() => _selectedMealType = type),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primarySoft
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                  width: isSelected ? 1.8 : 1.0,
+                                ),
+                                boxShadow:
+                                    isSelected ? AppColors.clayShadow : null,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  FluentEmoji.forMealType(type, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    tr.mealTypeName(type),
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w800
+                                          : FontWeight.w600,
+                                      color: isSelected
+                                          ? AppColors.primaryDeep
+                                          : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Primary Action: Save Meal Button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: _isSaving ? null : _handleSaveMeal,
+                    child: Ink(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: _isSaving ? null : AppColors.sunrise,
+                        color: _isSaving ? AppColors.surfaceMuted : null,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: AppColors.clayShadow,
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.tune_rounded, size: 20),
-                  label: Text(tr.text('proceed_to_portion')),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_isSaving)
+                            const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryDeep,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          else ...[
+                            const Icon(
+                              Icons.bookmark_added_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                '${tr.text('save_meal_btn')} (+${analysis.calories} kcal)',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 10),
+
+                // Row with Discard & Smart Portion
+                Row(
+                  children: [
+                    // Discard Button
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isSaving ? null : _handleDiscard,
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                          color: AppColors.rose,
+                        ),
+                        label: Text(
+                          tr.text('discard_meal_btn'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.rose,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: Color(0xFFFFD1D1),
+                            width: 1.5,
+                          ),
+                          backgroundColor: AppColors.roseSoft,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Smart Portion Button
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${analysis.thaiName} (${analysis.calories} kcal) พร้อมเข้าสู่ระบบ Smart Portion (Task 3.3)',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.tune_rounded,
+                          size: 18,
+                          color: AppColors.primaryDeep,
+                        ),
+                        label: Text(
+                          tr.text('proceed_to_portion'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryDeep,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                            color: AppColors.border,
+                            width: 1.5,
+                          ),
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
               ],
@@ -450,4 +786,3 @@ class _MacroMiniTile extends StatelessWidget {
     );
   }
 }
-
