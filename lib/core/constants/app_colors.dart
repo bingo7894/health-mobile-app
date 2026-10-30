@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// "Soft Sunrise" palette — ส้ม / ฟ้า / เหลือง โทนพาสเทลอุ่น ๆ สบายตา ไม่แสบตา
-/// พื้นหลังเป็นครีมอุ่น (ไม่ใช่ขาวจ้า) และตัวอักษรเป็นกรมท่าเข้ม (ไม่ใช่ดำสนิท)
+/// ผสานสไตล์ Soft 3D Claymorphism มีมิติความลึก แสงเงาตกกระทบนุ่มนวล
 class AppColors {
   AppColors._();
 
@@ -35,7 +35,7 @@ class AppColors {
   static const Color textTertiary = Color(0xFFA6AABA);
   static const Color border = Color(0xFFF2E9DF);
   static const Color divider = Color(0xFFF5EEE6);
-  static const Color shadow = Color(0x1AB4783C); // เงาโทนอุ่น ไม่ใช่เงาเทา
+  static const Color shadow = Color(0x1CB4783C); // เงาโทนอุ่น
 
   // Feedback
   static const Color error = Color(0xFFE5675C);
@@ -54,7 +54,43 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  static const List<BoxShadow> softShadow = [
-    BoxShadow(color: shadow, blurRadius: 24, offset: Offset(0, 8)),
+  /// เงาสองชั้นสไตล์ Soft 3D Claymorphism:
+  /// ชั้น 1 = เงาฟุ้งลึกโทนอุ่น, ชั้น 2 = เงาตกกระทบขอบล่างเพิ่มมิติความหนา
+  static const List<BoxShadow> clayShadow = [
+    BoxShadow(
+      color: Color(0x1EB4783C),
+      blurRadius: 18,
+      offset: Offset(0, 8),
+    ),
+    BoxShadow(
+      color: Color(0x0C000000),
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
   ];
+
+  static const List<BoxShadow> softShadow = clayShadow;
+
+  /// เงาสำหรับปุ่มกด 3D (Tactile Button)
+  static const List<BoxShadow> clayButtonShadow = [
+    BoxShadow(
+      color: Color(0x28EE6F33),
+      blurRadius: 8,
+      offset: Offset(0, 4),
+    ),
+  ];
+
+  /// เงานูนสำหรับแท่นวางไอคอน 3D ตามสีประจำมื้อ
+  static List<BoxShadow> badge3DShadow(Color accentColor) => [
+        BoxShadow(
+          color: accentColor.withAlpha(50),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+        const BoxShadow(
+          color: Color(0x0A000000),
+          blurRadius: 2,
+          offset: Offset(0, 1),
+        ),
+      ];
 }

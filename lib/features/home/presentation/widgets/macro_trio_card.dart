@@ -4,8 +4,8 @@ import 'package:health_app/core/localization/app_translations.dart';
 import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 
-/// การ์ดแสดงสัดส่วนสารอาหารหลัก 3 ชนิด (โปรตีน = ฟ้า, คาร์บ = เหลือง, ไขมัน = ชมพูพาสเทล)
-/// ใช้ไอคอน 3D Microsoft Fluent Emoji สไตล์ Claymorphism
+/// การ์ดแสดงสัดส่วนสารอาหารหลัก 3 ชนิด สไตล์ Soft 3D Claymorphism
+/// ใช้ไอคอน 3D Microsoft Fluent Emoji ขนาด 26dp บนแท่นนูน 38dp
 class MacroTrioCard extends StatelessWidget {
   final double proteinG;
   final double carbsG;
@@ -40,10 +40,18 @@ class MacroTrioCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.skySoft,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x152A8BC2),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.pie_chart_rounded,
-                  size: 18,
+                  size: 19,
                   color: AppColors.skyDeep,
                 ),
               ),
@@ -54,8 +62,8 @@ class MacroTrioCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 16.5,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -131,15 +139,24 @@ class _MacroBarRow extends StatelessWidget {
       children: [
         Row(
           children: [
+            // 3D tactile icon token
             Container(
-              width: 32,
-              height: 32,
+              width: 38,
+              height: 38,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: badgeColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white, width: 1.5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x10000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
-              child: FluentEmoji(emoji, size: 20),
+              child: FluentEmoji(emoji, size: 26),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -168,33 +185,43 @@ class _MacroBarRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: badgeColor,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white, width: 1),
               ),
               child: Text(
                 '${percentage.toStringAsFixed(0)}%',
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: textColor,
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0, end: ratio),
-            duration: const Duration(milliseconds: 750),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              return LinearProgressIndicator(
-                value: value,
-                minHeight: 8,
-                backgroundColor: badgeColor,
-                valueColor: AlwaysStoppedAnimation<Color>(barColor),
-              );
-            },
+        const SizedBox(height: 9),
+        // Embossed 3D progress bar
+        Container(
+          height: 10,
+          decoration: BoxDecoration(
+            color: badgeColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white.withAlpha(160), width: 1),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: ratio),
+              duration: const Duration(milliseconds: 750),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) {
+                return LinearProgressIndicator(
+                  value: value,
+                  minHeight: 10,
+                  backgroundColor: Colors.transparent,
+                  valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                );
+              },
+            ),
           ),
         ),
       ],

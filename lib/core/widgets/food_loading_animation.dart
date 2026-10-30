@@ -88,7 +88,7 @@ class _FoodLoadingAnimationState extends State<FoodLoadingAnimation>
                 offset: Offset(0, math.sin(t * math.pi * 4) * size * 0.025),
                 child: FluentEmoji(
                   FluentEmojiName.salad,
-                  size: size * 0.38,
+                  size: size * 0.46,
                 ),
               ),
             ],
@@ -109,7 +109,7 @@ class _FoodLoadingAnimationState extends State<FoodLoadingAnimation>
         scale: bounce,
         child: FluentEmoji(
           _foods[i],
-          size: size * 0.19,
+          size: size * 0.23,
         ),
       ),
     );

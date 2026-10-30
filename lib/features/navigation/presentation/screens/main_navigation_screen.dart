@@ -36,16 +36,22 @@ class MainNavigationScreen extends ConsumerWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Container(
-        width: 62,
-        height: 62,
+        width: 64,
+        height: 64,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: AppColors.sunrise,
+          border: Border.all(color: Colors.white, width: 2.5),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withAlpha(95),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
+              color: AppColors.primaryDeep.withAlpha(110),
+              blurRadius: 16,
+              offset: const Offset(0, 7),
+            ),
+            const BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 4,
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -160,6 +166,18 @@ class _NavBarItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: selected ? AppColors.primarySoft : Colors.transparent,
                 borderRadius: BorderRadius.circular(14),
+                border: selected
+                    ? Border.all(color: Colors.white, width: 1.2)
+                    : null,
+                boxShadow: selected
+                    ? const [
+                        BoxShadow(
+                          color: Color(0x18B4783C),
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Icon(
                 selected ? activeIcon : icon,

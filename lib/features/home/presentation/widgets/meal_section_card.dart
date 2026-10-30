@@ -6,7 +6,7 @@ import 'package:health_app/core/widgets/soft_card.dart';
 import 'package:health_app/features/home/data/datasources/nutrition_remote_datasource.dart';
 
 /// การ์ดแสดงรายการอาหารของแต่ละมื้อ (เช้า / กลางวัน / เย็น / ของว่าง / มื้อพิเศษ)
-/// ใช้ไอคอน 3D Microsoft Fluent Emoji
+/// สไตล์ Soft 3D Claymorphism พร้อมไอคอน Fluent Emoji 3D ขนาดใหญ่ชัดเจน
 class MealSectionCard extends StatelessWidget {
   final String mealType;
   final List<MealEntryItem> items;
@@ -21,25 +21,41 @@ class MealSectionCard extends StatelessWidget {
     required this.onAddTap,
   });
 
-  ({FluentEmojiName emoji, Color bg, Color accent}) _styleForMeal(String type) {
+  ({FluentEmojiName emoji, Color bg, Color accent, Gradient gradient})
+      _styleForMeal(String type) {
     switch (type.toUpperCase()) {
       case 'BREAKFAST':
         return (
           emoji: FluentEmojiName.cooking,
           bg: AppColors.butterSoft,
           accent: AppColors.butterDeep,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFF9E8), Color(0xFFFFEDBF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         );
       case 'LUNCH':
         return (
           emoji: FluentEmojiName.bento,
           bg: AppColors.primarySoft,
           accent: AppColors.primaryDeep,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFF3EC), Color(0xFFFFDFC9)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         );
       case 'DINNER':
         return (
           emoji: FluentEmojiName.potOfFood,
           bg: AppColors.skySoft,
           accent: AppColors.skyDeep,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFEEF8FD), Color(0xFFD4EEFC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         );
       case 'PRE_WORKOUT':
       case 'POST_WORKOUT':
@@ -47,12 +63,22 @@ class MealSectionCard extends StatelessWidget {
           emoji: FluentEmojiName.lightning,
           bg: AppColors.mintSoft,
           accent: AppColors.mint,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFECFAF5), Color(0xFFCEF4E6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         );
       default:
         return (
           emoji: FluentEmojiName.apple,
           bg: AppColors.roseSoft,
           accent: AppColors.rose,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFEF0F4), Color(0xFFFBD7E2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         );
     }
   }
@@ -70,17 +96,20 @@ class MealSectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              // 3D Clay Pod for Emoji Icon (56x56dp with White Highlight & Dual Shadows)
               Container(
-                width: 48,
-                height: 48,
+                width: 56,
+                height: 56,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: style.bg,
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: style.gradient,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: AppColors.badge3DShadow(style.accent),
                 ),
-                child: FluentEmoji(style.emoji, size: 28),
+                child: FluentEmoji(style.emoji, size: 38),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,12 +119,12 @@ class MealSectionCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       items.isEmpty
                           ? tr.text('meal_empty')
@@ -105,7 +134,7 @@ class MealSectionCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight:
-                            items.isEmpty ? FontWeight.w500 : FontWeight.w600,
+                            items.isEmpty ? FontWeight.w500 : FontWeight.w700,
                         color: items.isEmpty
                             ? AppColors.textTertiary
                             : style.accent,
@@ -115,18 +144,38 @@ class MealSectionCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Material(
-                color: AppColors.primarySoft,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: onAddTap,
-                  child: const Padding(
-                    padding: EdgeInsets.all(9),
-                    child: Icon(
-                      Icons.add_rounded,
-                      size: 20,
-                      color: AppColors.primaryDeep,
+
+              // 3D Tactile Add Button (+) with Bevel & Lift
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFF2E8), Color(0xFFFFDFCA)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x20EE6F33),
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: onAddTap,
+                    child: const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 22,
+                        color: AppColors.primaryDeep,
+                      ),
                     ),
                   ),
                 ),
@@ -169,7 +218,7 @@ class _MealItemRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -188,17 +237,27 @@ class _MealItemRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
+
+        // 3D Tactile Calorie Pill
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
             color: AppColors.surfaceMuted,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white, width: 1.2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x10B4783C),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Text(
             '${item.calories} ${tr.text('kcal')}',
             style: const TextStyle(
               fontSize: 12.5,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               color: AppColors.primaryDeep,
             ),
           ),

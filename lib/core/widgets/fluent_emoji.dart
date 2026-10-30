@@ -65,3 +65,4 @@ class FluentEmoji extends StatelessWidget {
     );
   }
 }
+

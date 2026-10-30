@@ -6,7 +6,7 @@ import 'package:health_app/core/widgets/fluent_emoji.dart';
 import 'package:health_app/core/widgets/soft_card.dart';
 
 /// การ์ดหลักแสดงสมดุลแคลอรีประจำวัน:
-/// ใช้วงโค้ง Sunrise Arc ขนาดใหญ่ โปร่งสบาย ตัวเลขไม่ชนขอบวงแหวน และไม่มีทางล้นจอ (Zero Overflow)
+/// วงโค้ง Sunrise Arc พร้อมหัวใจเปลวไฟ 3D และเสาสรุปผล 3 มิติ
 class CalorieHeroCard extends StatelessWidget {
   final int dailyGoal;
   final int eaten;
@@ -50,30 +50,48 @@ class CalorieHeroCard extends StatelessWidget {
                   ),
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 18, left: 26, right: 26),
+                      padding:
+                          const EdgeInsets.only(top: 14, left: 24, right: 24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // 3D Fire Pod / Over Goal Warning
                           Container(
-                            padding: const EdgeInsets.all(7),
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: isOver
                                   ? AppColors.errorSoft
-                                  : AppColors.primarySoft,
+                                  : Colors.white,
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isOver ? AppColors.error : Colors.white,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isOver
+                                          ? AppColors.error
+                                          : AppColors.primary)
+                                      .withAlpha(50),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: isOver
                                 ? const Icon(
                                     Icons.warning_amber_rounded,
-                                    size: 18,
+                                    size: 20,
                                     color: AppColors.error,
                                   )
                                 : const FluentEmoji(
                                     FluentEmojiName.fire,
-                                    size: 20,
+                                    size: 28,
                                   ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 5),
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
@@ -89,7 +107,7 @@ class CalorieHeroCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
                             tr.text(isOver ? 'over_goal' : 'remaining'),
                             textAlign: TextAlign.center,
@@ -97,7 +115,7 @@ class CalorieHeroCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -111,12 +129,20 @@ class CalorieHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // Bottom 3-column summary strip (Goal | Eaten | Burned)
+          // Bottom 3-column summary strip with 3D bevel (Goal | Eaten | Burned)
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white, width: 1.5),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0DB4783C),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
             child: IntrinsicHeight(
               child: Row(
@@ -192,10 +218,11 @@ class _StatColumn extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: iconBg,
                   shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1),
                 ),
                 child: Icon(icon, size: 13, color: iconColor),
               ),
@@ -301,4 +328,3 @@ class _SunriseArcPainter extends CustomPainter {
     return oldDelegate.progress != progress || oldDelegate.isOver != isOver;
   }
 }
-
