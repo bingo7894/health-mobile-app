@@ -11,6 +11,7 @@ import 'package:health_app/features/analytics/presentation/providers/weekly_stat
 import 'package:health_app/features/food_scanner/data/models/food_analysis_model.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/food_scanner_screen.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/food_analysis_result_sheet.dart';
+import 'package:health_app/features/food_scanner/presentation/screens/food_photo_review_sheet.dart';
 import 'package:health_app/main.dart';
 
 void main() {
@@ -122,6 +123,36 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('ปรับสัดส่วนอาหาร (Smart Portion)'), findsOneWidget);
+  });
+
+  testWidgets('FoodPhotoReviewSheet renders preview, quick chips and appends notes',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final dummyFile = File('dummy_food.jpg');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: FoodPhotoReviewSheet(
+            imageFile: dummyFile,
+            tr: AppTranslations(const Locale('th')),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    expect(find.text('ตรวจสอบรูปภาพ & เพิ่มเติม'), findsOneWidget);
+    expect(find.text('+ ไข่ดาว 3 ฟอง'), findsOneWidget);
+    expect(find.text('ส่งให้ AI วิเคราะห์ ✨'), findsOneWidget);
+
+    // Tap quick chip
+    await tester.tap(find.text('+ ไข่ดาว 3 ฟอง'));
+    await tester.pump();
+    expect(find.text('+ ไข่ดาว 3 ฟอง'), findsWidgets);
   });
 
   test('FoodGatekeeper fallback works when file does not exist', () async {

@@ -90,6 +90,19 @@ class AppTranslations {
       'retake_photo': 'ถ่ายภาพใหม่',
       'pick_from_gallery': 'เลือกจากอัลบั้ม',
 
+      // User Notes & Photo Review
+      'photo_review_title': 'ตรวจสอบรูปภาพ & เพิ่มเติม',
+      'add_notes_title': 'รายละเอียดเพิ่มเติม (ถ้ามี)',
+      'add_notes_hint': 'เช่น ไข่ดาว 3 ฟอง, หวานน้อย, พิเศษเนื้อ...',
+      'send_to_ai': 'ส่งให้ AI วิเคราะห์ ✨',
+      'chip_fried_egg_1': '+ ไข่ดาว 1 ฟอง',
+      'chip_fried_egg_2': '+ ไข่ดาว 2 ฟอง',
+      'chip_fried_egg_3': '+ ไข่ดาว 3 ฟอง',
+      'chip_less_rice': 'ข้าวน้อย',
+      'chip_less_sweet': 'หวานน้อย',
+      'chip_no_oil': 'ไม่ใส่น้ำมัน',
+      'chip_extra_meat': 'พิเศษเนื้อ',
+
       // AI Result
       'ai_result_title': 'ผลการวิเคราะห์อาหาร',
       'ai_confidence': 'ความมั่นใจ AI',
@@ -216,6 +229,19 @@ class AppTranslations {
       'no_food_detected_desc': 'Detected as "{label}". Please snap a photo of a meal or drink for accurate results.',
       'retake_photo': 'Take new photo',
       'pick_from_gallery': 'Pick from gallery',
+
+      // User Notes & Photo Review
+      'photo_review_title': 'Review Photo & Notes',
+      'add_notes_title': 'Add specific details (optional)',
+      'add_notes_hint': 'e.g., 3 fried eggs, less sweet, extra meat...',
+      'send_to_ai': 'Analyze with AI ✨',
+      'chip_fried_egg_1': '+ 1 fried egg',
+      'chip_fried_egg_2': '+ 2 fried eggs',
+      'chip_fried_egg_3': '+ 3 fried eggs',
+      'chip_less_rice': 'Less rice',
+      'chip_less_sweet': 'Less sweet',
+      'chip_no_oil': 'No added oil',
+      'chip_extra_meat': 'Extra meat',
 
       // AI Result
       'ai_result_title': 'Nutrition Analysis',

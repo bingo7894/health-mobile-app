@@ -8,6 +8,7 @@ import 'package:health_app/core/widgets/food_loading_animation.dart';
 import '../providers/food_scan_controller.dart';
 import '../widgets/not_food_dialog.dart';
 import 'food_analysis_result_sheet.dart';
+import 'food_photo_review_sheet.dart';
 
 class FoodScannerScreen extends ConsumerStatefulWidget {
   final String? mealType;
@@ -41,7 +42,19 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
       if (picked == null || !mounted) return;
 
       final file = File(picked.path);
-      await _runScanPipeline(file);
+
+      // Open Photo Review & Notes Sheet first
+      final tr = ref.read(appTranslationsProvider);
+      final userNotes = await FoodPhotoReviewSheet.show(
+        context,
+        imageFile: file,
+        tr: tr,
+      );
+
+      // If user canceled / requested retake, userNotes is null
+      if (userNotes == null || !mounted) return;
+
+      await _runScanPipeline(file, userNotes: userNotes);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +63,7 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
     }
   }
 
-  Future<void> _runScanPipeline(File file) async {
+  Future<void> _runScanPipeline(File file, {String? userNotes}) async {
     final tr = ref.read(appTranslationsProvider);
     final controller = ref.read(foodScanControllerProvider.notifier);
 
@@ -62,7 +75,7 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
     );
 
     try {
-      await controller.processImage(file);
+      await controller.processImage(file, userNotes: userNotes);
     } finally {
       if (mounted) {
         FoodLoadingDialog.hide(context);
