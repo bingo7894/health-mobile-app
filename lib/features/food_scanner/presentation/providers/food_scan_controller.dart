@@ -57,6 +57,8 @@ class FoodScanController extends StateNotifier<FoodScanState> {
   FoodScanController(this._aiDataSource) : super(const FoodScanState());
 
   Future<void> processImage(File sourceFile, {String? userNotes}) async {
+    if (!mounted) return;
+
     // 1. Stage: Verifying with On-Device ML Kit (Layer 2)
     state = state.copyWith(
       status: FoodScanStatus.verifying,
@@ -64,6 +66,8 @@ class FoodScanController extends StateNotifier<FoodScanState> {
     );
 
     final gatekeeper = await FoodGatekeeper.verifyFood(sourceFile.path);
+
+    if (!mounted) return;
 
     if (!gatekeeper.isFood) {
       // ดักจับสิ่งที่ไม่ใช่อาหาร ประหยัดค่า AI 100%
@@ -82,6 +86,8 @@ class FoodScanController extends StateNotifier<FoodScanState> {
 
     final compressed = await ImageCompressorHelper.compress(sourceFile);
 
+    if (!mounted) return;
+
     // 3. Stage: Analyzing with Gemini Flash via Gateway (Layer 4)
     state = state.copyWith(
       status: FoodScanStatus.analyzing,
@@ -94,11 +100,13 @@ class FoodScanController extends StateNotifier<FoodScanState> {
         userNotes: userNotes,
       );
 
+      if (!mounted) return;
       state = state.copyWith(
         status: FoodScanStatus.success,
         analysisResult: analysis,
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         status: FoodScanStatus.error,
         errorMessage: e.toString(),
@@ -107,13 +115,14 @@ class FoodScanController extends StateNotifier<FoodScanState> {
   }
 
   void reset() {
-    state = const FoodScanState();
+    if (mounted) {
+      state = const FoodScanState();
+    }
   }
 }
 
 final foodScanControllerProvider =
-    StateNotifierProvider.autoDispose<FoodScanController, FoodScanState>((ref) {
+    StateNotifierProvider<FoodScanController, FoodScanState>((ref) {
   final aiDataSource = ref.watch(aiRemoteDataSourceProvider);
   return FoodScanController(aiDataSource);
 });
-

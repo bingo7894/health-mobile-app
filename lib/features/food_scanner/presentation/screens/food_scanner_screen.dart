@@ -61,12 +61,15 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
       subtitle: tr.text('loading_ai_desc'),
     );
 
-    await controller.processImage(file);
+    try {
+      await controller.processImage(file);
+    } finally {
+      if (mounted) {
+        FoodLoadingDialog.hide(context);
+      }
+    }
 
     if (!mounted) return;
-
-    // Dismiss Loading Dialog
-    FoodLoadingDialog.hide(context);
 
     final state = ref.read(foodScanControllerProvider);
 
@@ -100,6 +103,7 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(foodScanControllerProvider);
     final tr = ref.watch(appTranslationsProvider);
 
     return Scaffold(
