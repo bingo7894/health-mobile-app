@@ -14,6 +14,9 @@ import 'package:health_app/features/food_scanner/presentation/screens/food_analy
 import 'package:health_app/features/food_scanner/presentation/screens/food_photo_review_sheet.dart';
 import 'package:health_app/features/food_scanner/presentation/screens/smart_portion_screen.dart';
 import 'package:health_app/features/food_scanner/domain/utils/macro_calculator.dart';
+import 'package:health_app/features/home/presentation/providers/meal_order_provider.dart';
+import 'package:health_app/features/home/presentation/widgets/meal_section_card.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:health_app/main.dart';
 
 void main() {
@@ -314,5 +317,67 @@ void main() {
     );
     expect(find.text('รายละเอียดเพิ่มเติม / โน้ตกำกับ'), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
+  });
+
+  test('MealOrderNotifier reorders meals correctly', () {
+    final notifier = MealOrderNotifier(const FlutterSecureStorage());
+    expect(notifier.state.first, equals('BREAKFAST'));
+    // Move LUNCH (index 1) to top (index 0)
+    notifier.reorderItem(1, 0);
+    expect(notifier.state.first, equals('LUNCH'));
+  });
+
+  testWidgets('MealSectionCard renders drag handle and delete item button',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    bool deleteTriggered = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MealSectionCard(
+            mealType: 'BREAKFAST',
+            items: const [
+              MealEntryItem(
+                id: '123',
+                foodName: 'ข้าวต้มกุ้ง',
+                calories: 320,
+                proteinG: 18,
+                carbsG: 45,
+                fatG: 6,
+              ),
+            ],
+            tr: AppTranslations(const Locale('th')),
+            onAddTap: () {},
+            onDeleteItem: (item) {
+              deleteTriggered = true;
+            },
+            dragHandle: const Icon(Icons.drag_indicator_rounded),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    expect(find.text('ข้าวต้มกุ้ง'), findsOneWidget);
+    expect(find.text('320 kcal'), findsOneWidget);
+    expect(find.byIcon(Icons.drag_indicator_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
+
+    // Tap delete button to open confirm dialog
+    await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('ลบรายการอาหารนี้?'), findsOneWidget);
+    expect(find.text('ยืนยันลบรายการ'), findsOneWidget);
+
+    // Confirm delete
+    await tester.tap(find.text('ยืนยันลบรายการ'));
+    await tester.pumpAndSettle();
+
+    expect(deleteTriggered, isTrue);
   });
 }

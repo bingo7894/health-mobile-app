@@ -297,6 +297,17 @@ class NutritionRemoteDataSource {
       return false;
     }
   }
+
+  /// ลบมื้ออาหารออกจากระบบ (DELETE /api/v1/nutrition/meals/{mealId})
+  /// Backend จะทำการลบและ Re-calculate ยอดรวมประจำวันให้อัตโนมัติ
+  Future<bool> deleteMeal(String mealId) async {
+    try {
+      final response = await _dio.delete('${ApiConfig.meals}/$mealId');
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 final nutritionDataSourceProvider = Provider<NutritionRemoteDataSource>((ref) {

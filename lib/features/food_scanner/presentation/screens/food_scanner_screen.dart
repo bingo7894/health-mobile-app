@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -29,8 +30,98 @@ class FoodScannerScreen extends ConsumerStatefulWidget {
 
 class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
   final ImagePicker _picker = ImagePicker();
+  CameraController? _cameraController;
+  List<CameraDescription> _cameras = const [];
+  int _selectedCameraIndex = 0;
+  bool _isCameraReady = false;
+  bool _isCapturing = false;
 
-  Future<void> _capture(ImageSource source) async {
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      final cameras = await availableCameras();
+      if (!mounted) return;
+      if (cameras.isNotEmpty) {
+        _cameras = cameras;
+        final backIndex = cameras.indexWhere(
+          (c) => c.lensDirection == CameraLensDirection.back,
+        );
+        _selectedCameraIndex = backIndex != -1 ? backIndex : 0;
+        await _setupController(_cameras[_selectedCameraIndex]);
+      }
+    } catch (e) {
+      debugPrint('Camera initialization error: $e');
+    }
+  }
+
+  Future<void> _setupController(CameraDescription camera) async {
+    final old = _cameraController;
+    final controller = CameraController(
+      camera,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+    await old?.dispose();
+    if (!mounted) return;
+
+    try {
+      await controller.initialize();
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+      setState(() {
+        _cameraController = controller;
+        _isCameraReady = true;
+      });
+    } catch (e) {
+      debugPrint('Error starting camera controller: $e');
+      if (mounted) {
+        setState(() => _isCameraReady = false);
+      }
+    }
+  }
+
+  Future<void> _switchCamera() async {
+    if (_cameras.length < 2 || _isCapturing) return;
+    final nextIndex = (_selectedCameraIndex + 1) % _cameras.length;
+    _selectedCameraIndex = nextIndex;
+    await _setupController(_cameras[_selectedCameraIndex]);
+  }
+
+  /// ถ่ายภาพโดยตรงจากหน้าจอแอปแบบ Instant (ไม่ต้องเด้งไปแอพกล้องระบบ)
+  Future<void> _captureDirectly() async {
+    if (_isCapturing) return;
+
+    if (_cameraController != null && _cameraController!.value.isInitialized) {
+      setState(() => _isCapturing = true);
+      try {
+        final xFile = await _cameraController!.takePicture();
+        final file = File(xFile.path);
+        await _handleSelectedFile(file);
+      } catch (e) {
+        debugPrint('Direct capture failed, falling back to picker: $e');
+        await _captureWithPicker(ImageSource.camera);
+      } finally {
+        if (mounted) setState(() => _isCapturing = false);
+      }
+    } else {
+      await _captureWithPicker(ImageSource.camera);
+    }
+  }
+
+  Future<void> _captureWithPicker(ImageSource source) async {
     try {
       final picked = await _picker.pickImage(
         source: source,
@@ -40,27 +131,28 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
       );
 
       if (picked == null || !mounted) return;
-
-      final file = File(picked.path);
-
-      // Open Photo Review & Notes Sheet first
-      final tr = ref.read(appTranslationsProvider);
-      final userNotes = await FoodPhotoReviewSheet.show(
-        context,
-        imageFile: file,
-        tr: tr,
-      );
-
-      // If user canceled / requested retake, userNotes is null
-      if (userNotes == null || !mounted) return;
-
-      await _runScanPipeline(file, userNotes: userNotes);
+      await _handleSelectedFile(File(picked.path));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error selecting image: $e')),
       );
     }
+  }
+
+  Future<void> _handleSelectedFile(File file) async {
+    // Open Photo Review & Notes Sheet first
+    final tr = ref.read(appTranslationsProvider);
+    final userNotes = await FoodPhotoReviewSheet.show(
+      context,
+      imageFile: file,
+      tr: tr,
+    );
+
+    // If user canceled / requested retake, userNotes is null
+    if (userNotes == null || !mounted) return;
+
+    await _runScanPipeline(file, userNotes: userNotes);
   }
 
   Future<void> _runScanPipeline(File file, {String? userNotes}) async {
@@ -95,8 +187,8 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
         detectedLabel: label,
         confidence: conf,
         tr: tr,
-        onRetake: () => _capture(ImageSource.camera),
-        onPickGallery: () => _capture(ImageSource.gallery),
+        onRetake: _captureDirectly,
+        onPickGallery: () => _captureWithPicker(ImageSource.gallery),
       );
     } else if (state.status == FoodScanStatus.success &&
         state.analysisResult != null) {
@@ -158,18 +250,37 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Viewfinder simulation background
-          Container(
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.center,
-                radius: 0.85,
-                colors: [Color(0xFF262835), Color(0xFF0F1016)],
+          // 1. Live In-App Camera Stream or Viewfinder fallback
+          if (_isCameraReady &&
+              _cameraController != null &&
+              _cameraController!.value.isInitialized)
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _cameraController!.value.previewSize?.height ?? 1,
+                  height: _cameraController!.value.previewSize?.width ?? 1,
+                  child: CameraPreview(_cameraController!),
+                ),
+              ),
+            )
+          else
+            Container(
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 0.85,
+                  colors: [Color(0xFF262835), Color(0xFF0F1016)],
+                ),
               ),
             ),
+
+          // 2. Soft Vignette overlay for focus
+          Container(
+            color: Colors.black.withAlpha(50),
           ),
 
-          // Center Viewfinder Target Frame
+          // 3. Center Viewfinder Target Frame
           Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 36),
@@ -279,14 +390,14 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
                       child: _BottomCircleAction(
                         icon: Icons.photo_library_rounded,
                         label: tr.text('gallery'),
-                        onTap: () => _capture(ImageSource.gallery),
+                        onTap: () => _captureWithPicker(ImageSource.gallery),
                       ),
                     ),
                     const SizedBox(width: 8),
 
-                    // Main 3D Shutter Camera Button
+                    // Main 3D Shutter Camera Button (Takes picture directly in-app)
                     GestureDetector(
-                      onTap: () => _capture(ImageSource.camera),
+                      onTap: _isCapturing ? null : _captureDirectly,
                       child: Container(
                         width: 78,
                         height: 78,
@@ -307,22 +418,33 @@ class _FoodScannerScreenState extends ConsumerState<FoodScannerScreen> {
                             shape: BoxShape.circle,
                             gradient: AppColors.sunrise,
                           ),
-                          child: const Icon(
-                            Icons.camera_alt_rounded,
-                            size: 32,
-                            color: Colors.white,
-                          ),
+                          child: _isCapturing
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 26,
+                                    height: 26,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 32,
+                                  color: Colors.white,
+                                ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
 
-                    // Quick Switch
+                    // Quick Switch Camera (Front <-> Rear)
                     Expanded(
                       child: _BottomCircleAction(
                         icon: Icons.flip_camera_ios_rounded,
                         label: 'Switch',
-                        onTap: () => _capture(ImageSource.camera),
+                        onTap: _switchCamera,
                       ),
                     ),
                   ],

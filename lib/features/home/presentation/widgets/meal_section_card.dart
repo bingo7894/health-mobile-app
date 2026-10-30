@@ -12,6 +12,8 @@ class MealSectionCard extends StatelessWidget {
   final List<MealEntryItem> items;
   final AppTranslations tr;
   final VoidCallback onAddTap;
+  final ValueChanged<MealEntryItem>? onDeleteItem;
+  final Widget? dragHandle;
 
   const MealSectionCard({
     super.key,
@@ -19,6 +21,8 @@ class MealSectionCard extends StatelessWidget {
     required this.items,
     required this.tr,
     required this.onAddTap,
+    this.onDeleteItem,
+    this.dragHandle,
   });
 
   ({FluentEmojiName emoji, Color bg, Color accent, Gradient gradient})
@@ -180,6 +184,12 @@ class MealSectionCard extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // Drag Handle to Reorder Meal Position
+              if (dragHandle != null) ...[
+                const SizedBox(width: 6),
+                dragHandle!,
+              ],
             ],
           ),
           if (items.isNotEmpty) ...[
@@ -189,7 +199,11 @@ class MealSectionCard extends StatelessWidget {
             ),
             for (var i = 0; i < items.length; i++) ...[
               if (i > 0) const SizedBox(height: 10),
-              _MealItemRow(item: items[i], tr: tr),
+              _MealItemRow(
+                item: items[i],
+                tr: tr,
+                onDelete: onDeleteItem,
+              ),
             ],
           ],
         ],
@@ -201,68 +215,202 @@ class MealSectionCard extends StatelessWidget {
 class _MealItemRow extends StatelessWidget {
   final MealEntryItem item;
   final AppTranslations tr;
+  final ValueChanged<MealEntryItem>? onDelete;
 
-  const _MealItemRow({required this.item, required this.tr});
+  const _MealItemRow({
+    required this.item,
+    required this.tr,
+    this.onDelete,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.foodName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.roseSoft,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.rose,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                tr.text('delete_food_title'),
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                'P ${item.proteinG.toStringAsFixed(0)}g · C ${item.carbsG.toStringAsFixed(0)}g · F ${item.fatG.toStringAsFixed(0)}g',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        const SizedBox(width: 10),
-
-        // 3D Tactile Calorie Pill
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceMuted,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white, width: 1.2),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x10B4783C),
-                blurRadius: 4,
-                offset: Offset(0, 2),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${item.foodName} (${item.calories} ${tr.text('kcal')})',
+              style: const TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryDeep,
               ),
-            ],
-          ),
-          child: Text(
-            '${item.calories} ${tr.text('kcal')}',
-            style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primaryDeep,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              tr.text('delete_food_desc'),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              tr.text('keep_editing'),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            icon: const Icon(Icons.delete_rounded, size: 16),
+            label: Text(tr.text('confirm_delete_btn')),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.rose,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && onDelete != null) {
+      onDelete!(item);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey(item.id ?? '${item.foodName}_${item.calories}'),
+      direction: onDelete != null
+          ? DismissDirection.endToStart
+          : DismissDirection.none,
+      confirmDismiss: (_) async {
+        await _confirmDelete(context);
+        return false;
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 14),
+        decoration: BoxDecoration(
+          color: AppColors.roseSoft,
+          borderRadius: BorderRadius.circular(12),
         ),
-      ],
+        child: const Icon(
+          Icons.delete_rounded,
+          color: AppColors.rose,
+          size: 22,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.foodName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'P ${item.proteinG.toStringAsFixed(0)}g · C ${item.carbsG.toStringAsFixed(0)}g · F ${item.fatG.toStringAsFixed(0)}g',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // 3D Tactile Calorie Pill
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white, width: 1.2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x10B4783C),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              '${item.calories} ${tr.text('kcal')}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primaryDeep,
+              ),
+            ),
+          ),
+
+          if (onDelete != null) ...[
+            const SizedBox(width: 4),
+            IconButton(
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                size: 20,
+                color: AppColors.rose,
+              ),
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(),
+              tooltip: tr.text('delete_food_title'),
+              onPressed: () => _confirmDelete(context),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

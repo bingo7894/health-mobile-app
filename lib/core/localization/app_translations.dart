@@ -121,6 +121,10 @@ class AppTranslations {
       'discard_confirm': 'ยืนยันที่จะทิ้ง',
       'meal_saved_success': 'บันทึกมื้ออาหารสำเร็จ!',
       'meal_save_failed': 'เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่อีกครั้ง',
+      'delete_food_title': 'ลบรายการอาหารนี้?',
+      'delete_food_desc': 'คุณต้องการลบรายการนี้ออกจากมื้ออาหารใช่หรือไม่? ยอดแคลอรีและสารอาหารรวมจะถูกคำนวณหักลบให้อัตโนมัติ',
+      'confirm_delete_btn': 'ยืนยันลบรายการ',
+      'item_deleted_success': 'ลบรายการอาหารสำเร็จ',
 
       // Smart Portion
       'smart_portion_title': 'ปรับสัดส่วนอาหาร (Smart Portion)',
@@ -287,6 +291,10 @@ class AppTranslations {
       'discard_confirm': 'Discard',
       'meal_saved_success': 'Meal saved successfully!',
       'meal_save_failed': 'Failed to save meal. Please try again.',
+      'delete_food_title': 'Delete this meal item?',
+      'delete_food_desc': 'Are you sure you want to delete this item? Daily calories and macros will be recalculated automatically.',
+      'confirm_delete_btn': 'Delete item',
+      'item_deleted_success': 'Item deleted successfully',
 
       // Smart Portion
       'smart_portion_title': 'Smart Portion Adjustment',
